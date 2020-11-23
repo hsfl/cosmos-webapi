@@ -19,4 +19,6 @@ npm i
 
 ## Running
 
-
+```bash
+npm run dev
+```
