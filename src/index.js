@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+//var bodyParser = require('body-parser');
 
 // Environment variables
 require('dotenv').config();
@@ -10,6 +11,8 @@ const client = require('./database');
 
 // Express Modules
 const namespace = require('./routes/namespace');
+const commands = require('./routes/commands');
+const query = require('./routes/query');
 
 // Express server
 const app = express();
@@ -17,9 +20,17 @@ const port = 3000;
 
 // Allow cross origin sharing
 app.use(cors());
+/*
+app.use(bodyParser.urlencoded({
+  extended:false
+}));
+app.use(bodyParser.json());
+*/
 
 // Express module/middleware for route
 app.use('/namespace', namespace);
+app.use('/commands', commands);
+app.use('/query', query);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
