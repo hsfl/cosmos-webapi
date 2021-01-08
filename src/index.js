@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-//var bodyParser = require('body-parser');
 
 // Environment variables
 require('dotenv').config();
@@ -20,12 +19,6 @@ const port = 3000;
 
 // Allow cross origin sharing
 app.use(cors());
-/*
-app.use(bodyParser.urlencoded({
-  extended:false
-}));
-app.use(bodyParser.json());
-*/
 
 // Express module/middleware for route
 app.use('/namespace', namespace);
