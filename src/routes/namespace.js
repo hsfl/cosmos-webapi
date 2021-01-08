@@ -1,15 +1,25 @@
 const express = require('express');
-
 const router = express.Router();
+const { listAllPieces , listAllNamespace} = require('../utils/file');
 
-// define the home page route
+/**   route GET /namespace/all/
+test this with :
+    curl --request GET \
+      --header "Content-Type: application/json" \
+      http://localhost:3000/namespace/all/
+*/
 router.get('/all', (req, res) => {
-  res.send('/namespace/all');
+  res.send(listAllNamespace());
 });
 
-// define the about route
+/**   route GET /namespace/pieces/
+test this with :
+    curl --request GET \
+      --header "Content-Type: application/json" \
+      http://localhost:3000/namespace/pieces/
+*/
 router.get('/pieces', (req, res) => {
-  res.send('/namespace/pieces ');
+  res.json(listAllPieces());
 });
 
 module.exports = router;

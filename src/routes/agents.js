@@ -1,20 +1,9 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const router = express.Router();
-
-//! following line is for parsing JSON data in POST requests
-router.use(bodyParser.json());
-
-router.use((req, res, next) => {
-  res.set('Content-type','application/json');
-  res.setHeader('Access-Control-Allow-Origin','*');
-  res.setHeader('Access-Control-Allow-Methods','GET, POST, PUT, OPTIONS, DELETE');
-  res.setHeader('Access-Control-Max-Age','1728000');
-  res.setHeader('Access-Control-Allow-Headers','*');
-  next();
-});
+const { listAllAgents } = require('../utils/file');
 
 /**   route GET //agents
+ *  - list all agents for each node in the nodes folder
 test this with :
     curl --request GET \
       --header "Content-Type: application/json" \
@@ -22,7 +11,7 @@ test this with :
 */
 router.get('/', (req, res) => {
 
-  res.send("//agents/");
+  res.json(listAllAgents());
 
 });
 
