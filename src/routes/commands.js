@@ -49,7 +49,7 @@ router.post('/', (req, res) => {
     curl --data '{"command":{"event_name":"new_event"}}' \
       --request POST \
       --header "Content-Type: application/json" \
-      http://localhost:3000/commands/testNode:commands
+      http://localhost:3000/commands/testNode
 */
 router.post('/:commandNode/', (req, res) => {
   const collectionName = req.params.commandNode;
@@ -73,7 +73,7 @@ router.post('/:commandNode/', (req, res) => {
 test this with :
   curl --request GET \
     --header "Content-Type: application/json" \
-    http://localhost:3000/commands/testNode:commands
+    http://localhost:3000/commands/testNode
 */
 router.get('/:commandNode/', (req, res) => {
   const collectionName = req.params.commandNode;
@@ -99,7 +99,7 @@ router.get('/:commandNode/', (req, res) => {
   curl --data '{"event_name":"new_event2"}' \
     --request DELETE \
     --header "Content-Type: application/json" \
-    http://localhost:3000/commands/testNode:commands
+    http://localhost:3000/commands/testNode
 */
 router.delete('/:commandNode/', (req, res) => {
   const collectionName = req.params.commandNode;
