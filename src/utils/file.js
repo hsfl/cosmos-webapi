@@ -9,12 +9,6 @@ function getDirectories(srcpath)
 }
 
 function listAllNodes() {
-    /*
-    const nodenames = [];
-    console.log(getDirectoryNames(nodes_folder));
-    getDirectories(nodes_folder).forEach(nodeDir =>{
-        nodenames.push(nodeDir.split("/").slice(-1)[0]);
-    }); */
     return getDirectories(nodes_folder);
 }
 
