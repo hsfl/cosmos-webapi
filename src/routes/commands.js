@@ -29,17 +29,24 @@ router.post('/', (req, res) => {
 
   
   var cmd = req.body['command'];
-  console.log(cmd);
 
   var spawn = require('child_process').spawn;
-  var command = spawn(cmd);
-  var result = '';
-  command.stdout.on('data', function(data) {
-       result += data.toString();
-  });
-  command.on('close', function(code) {
-      res.send(result);
-  });
+  try{
+    var command = spawn(cmd);
+    var result = '';
+    command.stdout.on('data', function(data) {
+        result += data.toString();
+    });
+    command.on('close', function(code) {
+        res.json({output:result});
+    });
+  }
+  catch(err){
+    var cmdStr = cmd; 
+    if(!cmd) cmdStr = "";
+
+    res.json({error: "invalid command ("+cmdStr+")"});
+  }
 
 });
 

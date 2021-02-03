@@ -1,11 +1,11 @@
 var supertest = require('supertest'),
 app = require('../../src/index');
 
-exports.route_agents = function(done){
+exports.route_nodes = function(done){
   supertest(app)
-  .get('//agents')
+  .get('//nodes')
   .set('Accept', 'application/json')
-  .expect('Content-Type', /json/)
+      .expect('Content-Type', /json/)
   .expect(200)
   .end(done);
 };
