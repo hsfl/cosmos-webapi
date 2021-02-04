@@ -25,5 +25,5 @@ npm run dev
 
 ## Unit Tests
 ```bash
-npm test
+mocha
 ```
