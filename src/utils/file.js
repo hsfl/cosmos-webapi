@@ -37,7 +37,7 @@ function listAllPieces(){
         }
         var pieceFile = path.join(nodeDir, "pieces.ini");
 
-        try {
+        //try {
             if (fs.existsSync(pieceFile)) {
                 try {
                     let rawdata = fs.readFileSync(pieceFile);
@@ -45,17 +45,15 @@ function listAllPieces(){
                         node["pieces"]  = JSON.parse(rawdata);
                          
                     } catch(e){
-                        console.error(e);
-                        console.log(pieceFile);
-                        return;
+                        node["pieces"] = {};
                     }
                 } catch(err){
                     console.error(err);
                 }
             }
-        } catch(err) {
-            console.error(err);
-        }
+       // } catch(err) {
+        //    console.error(err);
+       // }
         json[nodeName] = node; 
 
     }); 
