@@ -20,16 +20,17 @@ router.use((req, res, next) => {
 
 /* TEST POST
 curl --header "Content-Type: application/json" \
-    --request POST \
+    --request GET \
     --data '{"multiple": true}' \
-    http://localhost:3000/query/dbName/collectionName
+    http://localhost:3000/query/test/tc
 */
-router.post('/:realm/:nodeProcess/', (req, res) => {
+// TODO: update all calls to POST /query in cosmos-web with GET 
+router.get('/:realm/:nodeProcess/', (req, res) => {
     const dbName = req.params.realm;
     const collectionName = req.params.nodeProcess;
 
     const options = req.body['options'] ? req.body['options'] : {};
-    const multiple = req.body['multiple']? req.body['multiple'] : {};
+    const multiple = req.body['multiple']? req.body['multiple'] : false;
     const query = req.body['query']? req.body['query'] : {};
 
     dbConnect(function(err, db) {
@@ -37,7 +38,7 @@ router.post('/:realm/:nodeProcess/', (req, res) => {
 
         var dbo = db.db(dbName);
         const collection = dbo.collection(collectionName);
-
+        
         if(multiple === true){
             collection.find(query, options).toArray(function(err, result){
                 if(err) throw err;                 
