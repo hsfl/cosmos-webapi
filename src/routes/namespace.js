@@ -9,7 +9,7 @@ test this with :
       http://localhost:3000/namespace/all/
 */
 router.get('/all', (req, res) => {
-  res.send(listAllNamespace());
+  res.json(listAllNamespace());
 });
 
 /**   route GET /namespace/pieces/
