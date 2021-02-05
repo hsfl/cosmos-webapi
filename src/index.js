@@ -7,12 +7,12 @@ require('dotenv').config();
 // Websocket server & database driver
 const wss = require('./websocket');
 const client = require('./database');
+const cosmos_port = require('./cosmos_listen');
 
 // Express Modules
 const namespaceRoute = require('./routes/namespace');
 const commandsRoute = require('./routes/commands');
 const queryRoute = require('./routes/query');
-const execRoute = require('./routes/exec');
 const nodesRoute = require('./routes/nodes');
 const agentsRoute = require('./routes/agents');
 
@@ -27,7 +27,6 @@ app.use(cors());
 app.use('/namespace', namespaceRoute);
 app.use('/commands', commandsRoute);
 app.use('/query', queryRoute);
-app.use('/exec', execRoute);
 app.use('//nodes', nodesRoute);
 app.use('//agents', agentsRoute);
 
