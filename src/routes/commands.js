@@ -20,26 +20,67 @@ router.use((req, res, next) => {
 /**   route POST /commands/
  *   executes command
   test this with :
-    curl --data '{"command":"ls"}' \
+    curl --data '{"command":"ls -l"}' \
       --request POST \
       --header "Content-Type: application/json" \
       http://localhost:3000/commands/
 */
+
 router.post('/', (req, res) => {
 
-  
   var cmd = req.body['command'];
-  console.log(cmd);
+  if(!cmd || cmd === undefined){
+    res.sendStatus(400);
+  }
+  else {
+    var spawn = require('child_process').spawn;
+    try{
+      var cmd_args = cmd.split(" ");
+      if(cmd_args.length == 1){
+        var command = spawn(cmd);
+      }
+      else {
+        var command = spawn(cmd_args[0], cmd_args.slice(1));
+      }
 
+      var result = '';
+      command.stdout.on('data', function(data) {
+          result += data.toString();
+      });
+      command.on('close', function(code) {
+          res.json({output:result});
+      });
+    }
+    catch(err){
+      var cmdStr = cmd; 
+      if(!cmd) cmdStr = "";
+      res.json({error: "invalid command ("+cmdStr+")"});
+    }
+  }
+});
+
+router.post('/agent', (req, res) => {
+
+  var cmd = req.body['command'];
   var spawn = require('child_process').spawn;
-  var command = spawn(cmd);
-  var result = '';
-  command.stdout.on('data', function(data) {
-       result += data.toString();
-  });
-  command.on('close', function(code) {
-      res.send(result);
-  });
+
+  try{
+
+    var command = spawn("/bin/bash", ['-c','~/cosmos/bin/agent '+cmd]);
+    var result = '';
+    command.stdout.on('data', function(data) {
+        result += data.toString();
+    });
+    command.on('close', function(code) {
+        res.json({result});
+    });
+  }
+  catch(err){
+    var cmdStr = cmd; 
+    if(!cmd) cmdStr = "";
+
+    res.json({error: "invalid command ("+cmdStr+")"});
+  }
 
 });
 
@@ -104,19 +145,25 @@ router.get('/:commandNode/', (req, res) => {
 router.delete('/:commandNode/', (req, res) => {
   const collectionName = req.params.commandNode;
   const eventToDelete = req.body['event_name'];
-
-  dbConnect(function(err, db) {
-    if (err) throw err;
-
-    var dbo = db.db(process.env.REALM);
-    const collection = dbo.collection(`${collectionName}:commands`);
-
-    collection.deleteOne({"event_name":`${eventToDelete}`},function(err){
-      if(err) res.json({"error":"Error deleting."});                 
-      else res.json({"message":"Successfully deleted command"});
-      db.close(); 
+  if(!eventToDelete || eventToDelete === undefined){
+    res.sendStatus(400);
+    return;
+  }
+  else {
+    dbConnect(function(err, db) {
+      if (err) throw err;
+  
+      var dbo = db.db(process.env.REALM);
+      const collection = dbo.collection(`${collectionName}:commands`);
+  
+      collection.deleteOne({"event_name":`${eventToDelete}`},function(err){
+        if(err) res.json({"error":"Error deleting."});                 
+        else res.json({"message":"Successfully deleted command"});
+        db.close(); 
+      });
     });
-  });
+  }
+  
 });
 
 module.exports = router;

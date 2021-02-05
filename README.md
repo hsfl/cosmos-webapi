@@ -22,3 +22,8 @@ npm i
 ```bash
 npm run dev
 ```
+
+## Unit Tests
+```bash
+mocha
+```
