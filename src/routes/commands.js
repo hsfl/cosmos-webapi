@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
 const { dbConnect } = require('../database.js');
-
+const { agent_req, execute }  = require('../utils/exec.js');
 const emptyResponse = {"error":"Empty Response."};
 
 //! following line is for parsing JSON data in POST requests
@@ -33,54 +33,42 @@ router.post('/', (req, res) => {
     res.sendStatus(400);
   }
   else {
-    var spawn = require('child_process').spawn;
-    try{
-      var cmd_args = cmd.split(" ");
-      if(cmd_args.length == 1){
-        var command = spawn(cmd);
+    var cmd_args = cmd.split(" ");
+    var exec_cmd ="";
+    var args =[];
+    if(cmd_args.length == 1){
+      exec_cmd = cmd; 
+    }
+    else {
+      exec_cmd = cmd_args[0];
+      args = cmd_args.slice(1);
+    }
+    execute(exec_cmd, args, (response, err) => {
+      if(err){
+        res.json(response);
       }
       else {
-        var command = spawn(cmd_args[0], cmd_args.slice(1));
+        res.json({output:response});
       }
-
-      var result = '';
-      command.stdout.on('data', function(data) {
-          result += data.toString();
-      });
-      command.on('close', function(code) {
-          res.json({output:result});
-      });
-    }
-    catch(err){
-      var cmdStr = cmd; 
-      if(!cmd) cmdStr = "";
-      res.json({error: "invalid command ("+cmdStr+")"});
-    }
+    });
   }
 });
+
+/**   route POST /commands/
+ *   executes command
+  test this with :
+    curl --data '{"command":"list"}' \
+      --request POST \
+      --header "Content-Type: application/json" \
+      http://localhost:3000/commands/agent
+*/
 
 router.post('/agent', (req, res) => {
 
   var cmd = req.body['command'];
-  var spawn = require('child_process').spawn;
-
-  try{
-
-    var command = spawn("/bin/bash", ['-c','~/cosmos/bin/agent '+cmd]);
-    var result = '';
-    command.stdout.on('data', function(data) {
-        result += data.toString();
-    });
-    command.on('close', function(code) {
-        res.json({result});
-    });
-  }
-  catch(err){
-    var cmdStr = cmd; 
-    if(!cmd) cmdStr = "";
-
-    res.json({error: "invalid command ("+cmdStr+")"});
-  }
+  agent_req(cmd, (result)=>{
+    res.json(result);
+  });
 
 });
 

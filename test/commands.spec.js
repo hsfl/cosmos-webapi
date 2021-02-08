@@ -33,8 +33,10 @@ describe("POST /commands/ {command: 'ls'}", function() {
       .expect('Content-Type',/json/)
       .end(function(err, res){
         if (err) done(err);
-        assert.ok(res.body.output);
-        done();
+        else {
+          assert.ok(res.body.output);
+          done();
+        }
       });
   });
 });
@@ -59,21 +61,22 @@ describe("POST /commands/ {command: 'ls -l'}", function() {
     .expect('Content-Type',/json/)
     .end(function(err, res){
       if (err) done(err);
-      assert.ok(res.body.output);
-      done();
+      else {
+        assert.ok(res.body.output);
+        done();
+      }
     });
   });
 });
 
 describe("POST /commands/agent {command: 'list'}", function() {
-  this.timeout(30000);
+  this.timeout(10000);
   it("it should have status code 200", function(done) {
     const data = {command: "list"};
       supertest(app)
       .post('/commands/agent')
       .send(data)
       .expect(200)
-      .expect('Content-Type',/json/)
       .end(done);
   });
 
@@ -83,24 +86,24 @@ describe("POST /commands/agent {command: 'list'}", function() {
     .post('/commands/agent')
     .send(data)
     .expect(200)
-    .expect('Content-Type',/json/)
     .end(function(err, res){
       if (err) done(err);
-      assert.ok(res.body);
-      done();
+      else {
+        assert.ok(res.body);
+        done();
+      }
     });
 });
 });
 
 describe("POST /commands/agent {command: 'nodename agentname'}", function() {
-  this.timeout(30000);
+  this.timeout(10000);
   it("it should have status code 200", function(done) {
     const data = {command: "node agent"};
       supertest(app)
       .post('/commands/agent')
       .send(data)
       .expect(200)
-      .expect('Content-Type',/json/)
       .end(done);
   });
 
@@ -110,11 +113,12 @@ describe("POST /commands/agent {command: 'nodename agentname'}", function() {
     .post('/commands/agent')
     .send(data)
     .expect(200)
-    .expect('Content-Type',/json/)
     .end(function(err, res){
       if (err) done(err);
-      assert.ok(res.body);
-      done();
+      else {
+        assert.ok(res.body);
+        done();
+      }
     });
   });
 });
@@ -129,8 +133,10 @@ describe("POST /commands/:node {command: {event_name:'new_event'}}", function() 
       .expect('Content-Type',/json/)
       .end(function(err, res){
         if (err) done(err);
-        assert.ok(res.body.message);
-        done();
+        else {
+          assert.ok(res.body.message);
+          done();
+        }
       });
   });
 
@@ -143,8 +149,10 @@ describe("GET /commands/:node ", function() {
       .expect('Content-Type',/json/)
       .end(function(err, res){
         if (err) done(err);
-        assert.ok(res.body);
-        done();
+        else {
+          assert.ok(res.body);
+          done();
+        }
       });
   });
 
@@ -159,8 +167,10 @@ describe("DELETE /commands/:node {event_name:'new_event'}", function() {
       .expect('Content-Type',/json/)
       .end(function(err, res){
         if (err) done(err);
-        assert.ok(res.body.message);
-        done();
+        else {
+          assert.ok(res.body.message);
+          done();
+        }
       });
   });
 });
