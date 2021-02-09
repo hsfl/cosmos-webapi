@@ -1,6 +1,7 @@
 const COSMOS_ADDR = "225.1.1.1";
 const COSMOS_PORT = 10020;
-
+const { cosmosParseJSON , nodeIsIncluded } = require('./utils/cosmos_utils.js');
+const { dbInsertANY } = require('./database.js');
 const dgram = require('dgram');
 const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
 
@@ -17,9 +18,19 @@ socket.on('listening', () => {
 });
 
 socket.on('message', (msg, rinfo) => {
-    var mess = msg.slice(3);
-    console.log(JSON.parse(mess));
-  //console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
+    cosmosParseJSON(msg, (json) => {
+        if(json.agent_node && json.agent_proc && json.agent_addr){
+            if(nodeIsIncluded(json.agent_node)){
+                // insert to db REALM, collection "any"
+                dbInsertANY(json);
+                if(json.agent_proc !== "exec"){
+                    // send json on WS 
+                }
+            }
+        }
+        console.log(json);
+    });
+
 });
 
 

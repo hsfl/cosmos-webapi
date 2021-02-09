@@ -5,9 +5,15 @@ const cors = require('cors');
 require('dotenv').config();
 
 // Websocket server & database driver
-const wss = require('./websocket');
+
+
 const client = require('./database');
-const cosmos_port = require('./cosmos_listen');
+if(process.env.COLLECT === "agent"){
+  const cosmos_port = require('./cosmos_listen');
+}
+const wss = require('./websocket');
+
+
 
 // Express Modules
 const namespaceRoute = require('./routes/namespace');
