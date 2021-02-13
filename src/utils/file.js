@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const nodes_folder = process.env.NODES_PATH; 
+const nodes_folder = path.join(process.env.COSMOS_DIR,'nodes'); 
 
 function getDirectories(srcpath)
 {
