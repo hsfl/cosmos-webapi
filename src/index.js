@@ -5,12 +5,8 @@ const cors = require('cors');
 require('dotenv').config();
 
 // Websocket server & database driver
-
-
 const client = require('./database');
-if(process.env.COLLECT === "agent"){
-  const cosmos_port = require('./cosmos_listen');
-}
+
 const wss = require('./websocket');
 
 

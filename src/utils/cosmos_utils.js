@@ -35,29 +35,8 @@ function getAnyExecSOH(callback){
     });
 }
 
-function cosmosParseJSON(message, callback) {
-    const msg = String(message);
-    var json_start = 0; 
-    var json_end = 0; 
-    if(msg.charAt(1) === '{'){
-        json_start = 1;
-    } else if(msg.charAt(3) === '{') {
-        json_start = 3; 
-    }
-    json_end = msg.lastIndexOf('}') +1;
-    if(json_start > 0 && json_end > 0 ) {
-        var jmess = msg.slice(json_start, json_end);
-        const json = JSON.parse(jmess);
-        callback(json);
-    }
-    else {
-        console.log(message);
-    }
-    
-}
 
 module.exports = {
-    cosmosParseJSON,
     nodeIsIncluded,
     getAnyExecSOH
 };
