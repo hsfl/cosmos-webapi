@@ -2,6 +2,7 @@ const COSMOS_ADDR = "225.1.1.1";
 const COSMOS_PORT = 10020;
 const { cosmosParseJSON , nodeIsIncluded } = require('./utils/cosmos_utils.js');
 const { dbInsertANY } = require('./database.js');
+const wss = new WebSocket.Server({ port: process.env.WEBSOCKET_PORT  , path: '/live/all'});
 const dgram = require('dgram');
 const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
 
