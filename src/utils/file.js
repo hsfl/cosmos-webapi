@@ -15,6 +15,7 @@ function getNodeDir(nodeName){
     return nodeDir =  path.join(nodes_folder, nodeName);
 }
 
+
 function listAllAgents(){
     var json = {};
     const nodeNames = listAllNodes(); 
@@ -138,9 +139,30 @@ function listAllNamespace(){
     return namespace;
 }
 
+
+function gzLineByLine(file, onLine, onError, callback ) {
+    const zlib     = require('zlib');
+    const readline = require('readline');
+    try{
+        let lineReader = readline.createInterface({
+            input: fs.createReadStream(file).pipe(zlib.createGunzip())
+        });
+        lineReader.on('line', onLine);
+        lineReader.on('close', callback);
+    }
+    catch(e){
+        onError(e); 
+    }
+    
+}
+
+
+
 module.exports = {
     listAllNodes,
     listAllAgents,
     listAllPieces,
-    listAllNamespace
+    listAllNamespace,
+    getNodeDir,
+    gzLineByLine
 };
