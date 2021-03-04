@@ -34,8 +34,3 @@ function getAgentList() {
 }
   
 setInterval(getAgentList, 5000);
-/*function myFunc(arg) {
-    console.log(`arg was => ${arg}`);
-    process.send("agent list")
-}*/
-//setInterval(myFunc, 1500, 'funky');

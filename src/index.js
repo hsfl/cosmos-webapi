@@ -20,7 +20,7 @@ const agentsRoute = require('./routes/agents');
 
 // Express server
 const app = express();
-const port = 3000;
+const port = process.env.API_PORT;
 
 // Allow cross origin sharing
 app.use(cors());

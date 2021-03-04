@@ -4,8 +4,6 @@ const { dbFind , dbInsert , dbFindAndReplace } = require("../database");
 
 const fs = require('fs');
 const path = require('path');
-const { execFile } = require("child_process");
-
 
 function makeDirectory(dir) {
     if (!fs.existsSync(dir)){
@@ -56,7 +54,6 @@ function ingestTelemetryFile(filePath, nodeName) {
                 
                 json.node_type = node_type;
                 if(!dbRes){
-                    //console.log("inserting", json);
                     dbInsert(process.env.REALM, "any", json);
                 }
             }
@@ -147,7 +144,6 @@ function moveIncomingFile(filePath, newDirName){
     makeDirectory(fileDir);
     
     const newFileName = path_list.join('/');
-    console.log(`rename ${filePath} to ${newFileName}`)
     fs.renameSync(filePath, newFileName, (err) => {
         console.error(`could not rename ${filePath} to ${newFileName}`);
     });
@@ -171,7 +167,6 @@ function fileWalkEvent() {
     nodeNames.forEach( nodeName => {
         if(nodeIsIncluded(nodeName)){
             const execFileList = getEventFileList(nodeName);
-            console.log(execFileList);
             execFileList.forEach((file) => { 
                 ingestEventFile(file, nodeName);
             });
