@@ -48,7 +48,7 @@ agent_list.on('message', (message) => {
 // process: collect data loop 
 const collect_data = fork('./src/process/collect_data.js');
 collect_data.on('message', (message) => {
-  endMessage(message);
+  sendMessage(message);
 });
 
 // process: file walk loop 
