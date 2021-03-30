@@ -113,7 +113,7 @@ router.get('/:commandNode/', (req, res) => {
     const collection = dbo.collection(`${collectionName}:commands`);
 
     collection.find().toArray(function(err, result){
-      if(err) throw err;                 
+      if(err) throw err;
       if(result.length > 0) res.json(result);
       else res.json(emptyResponse);
       db.close(); 

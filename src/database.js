@@ -22,15 +22,15 @@ function dbInsert(dbName, collectionName,doc){
     });
 }
 
-function dbFind(dbName, collectionName, fields){
+function dbFind(dbName, collectionName, fields, callback){
     dbConnect((err, db) => {
         if(err) throw err; 
         var dbo = db.db(dbName);
         const collection = dbo.collection(collectionName);
-        collection.find(fields, (err, res) => {
+        collection.findOne(fields, (err, res) => {
             if(err) console.log("Error finding.");  
-            db.close();   
-            return res;
+            db.close();
+            return callback(res);
         });
     });
 }

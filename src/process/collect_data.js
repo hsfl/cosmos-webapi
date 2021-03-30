@@ -1,22 +1,28 @@
-const { dbInsertANY } = require("../database");
+const { reset } = require("nodemon");
+const { dbInsertANY, dbFind } = require("../database");
 const { nodeIsIncluded } = require("../utils/cosmos_utils");
 const { agent_req } = require("../utils/exec");
 
 function collectData(){
-    agent_req("any exec soh", (resp) => { 
-        try {
-            const sohJson = JSON.parse(resp);
-            if(sohJson.output){
-                var soh = sohJson.output;
-                var nodeName = soh.node_name;
-                if(nodeName && nodeIsIncluded(nodeName)){
-                    dbInsertANY(soh);
-                    process.send(JSON.stringify(soh));
+    dbFind(process.env.REALM, 'env', {agent_list:{$exists:true}}, res => {
+		res.agent_list.forEach(agent => {
+            agent_req([agent.node, agent.agent, 'get_state'].join(' '), (resp) => { 
+                try {
+                    const sohJson = JSON.parse(resp);
+                    if(sohJson.output){
+                        var soh = sohJson.output;
+                        var nodeName = soh.node_name;
+                        if(nodeName && nodeIsIncluded(nodeName)){
+                            dbInsertANY(soh);
+                            process.send(JSON.stringify(soh));
+                        }
+                    }
                 }
-            }
-        }
-        catch(e){}
+                catch(e){}
+            });
+        });
     });
+    
 }
 
 setInterval(collectData, 5000);

@@ -56,8 +56,10 @@ router.get('/:realm/:nodeProcess/', (req, res) => {
             });
         }
   });
-  
-  
+});
+
+router.post('/:realm/:nodeProcess/', (req, res) => {
+    res.send('temp');
 });
 
 
