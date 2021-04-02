@@ -6,7 +6,7 @@ const { agent_req } = require("../utils/exec");
 function collectData(){
     dbFind(process.env.REALM, 'env', {agent_list:{$exists:true}}, res => {
 		res.agent_list.forEach(agent => {
-            agent_req([agent.node, agent.agent, 'get_state'].join(' '), (resp) => { 
+            agent_req([agent.node, agent.agent, 'soh2'].join(' '), (resp) => { 
                 try {
                     const sohJson = JSON.parse(resp);
                     if(sohJson.output){
