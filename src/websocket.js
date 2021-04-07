@@ -9,6 +9,7 @@ const wsServer = new webSocketServer({
 
 // I'm maintaining all active connections in this object
 const clients = {};
+const nodes = {};
 
 // This code generates unique userid for everyuser.
 const getUniqueID = () => {
@@ -23,6 +24,14 @@ const sendMessage = (json) => {
   });
 }
 
+const sendToClients = (json, nodename) => {
+  Object.keys(clients).map((client) => {
+    if(nodes[nodename].contains(client)){
+      clients[client].sendUTF(json);
+    }
+  });
+}
+
 wsServer.on('request', function(request) {
   var userID = getUniqueID();
   console.log((new Date()) + ' Recieved a new connection from origin ' + request.origin + '.');
@@ -31,9 +40,25 @@ wsServer.on('request', function(request) {
   clients[userID] = connection;
   console.log('connected: ' + userID + ' in ' + Object.getOwnPropertyNames(clients))
 
+  connection.on('message', function(msg) {
+    console.log(msg);
+    // get the client's node list 
+    clients_nodelist[userID] = msg.nodes;
+    for(node in msg.nodes){
+      if(!nodes.includes(node)) nodes[node] = [];
+      nodes[node].push(userID);
+    }
+  });
+
   connection.on('close', function(connection) {
     console.log((new Date()) + " Peer " + userID + " disconnected.");
     delete clients[userID];
+
+    // delete userID from nodes
+    for(node in nodes){
+      node = node.filter((id) => {return id !== userID});
+    }
+
   });
 });
 
@@ -42,31 +67,36 @@ const { fork } = require('child_process');
 // process: agent list loop
 const agent_list = fork('./src/process/agent_list.js');
 agent_list.on('message', (message) => {
-  sendMessage(message);
+  // sendMessage(message);
+  sendToClients(message.data, message.nodename);
 });
 
 // process: collect data loop 
 const collect_data = fork('./src/process/collect_data.js');
 collect_data.on('message', (message) => {
-  sendMessage(message);
+  //sendMessage(message);
+  sendToClients(message.data, message.nodename);
 });
 
 // process: file walk loop 
 const file_walk = fork('./src/process/incoming_filewalk.js');
 file_walk.on('message', (message) => {
-  sendMessage(message);
+  //sendMessage(message);
+  sendToClients(message.data, message.nodename);
 });
 
 // process: event queue loop 
 const event_queue = fork('./src/process/event_queue.js');
 event_queue.on('message', (message) => {
-  sendMessage(message);
+  //sendMessage(message);
+  sendToClients(message.data, message.nodename);
 });
 
 // process: file list loop ( list of outgoing/incoming files for hostNode )
 const file_list = fork('./src/process/file_list.js');
 file_list.on('message', (message) => {
-  sendMessage(message);
+  //sendMessage(message);
+  sendToClients(message.data, message.nodename);
 });
 
 module.exports = server;
