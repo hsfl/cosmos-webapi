@@ -41,8 +41,6 @@ const sendAllClients = (json) => {
  */
 const sendToClients = (json, nodename) => {
   if(clients.length > 0) console.log(nodes);
-  console.log(`sending nodes ${nodename}`);
-  console.log(nodes);
   Object.entries(clients).forEach(([id,connection]) => {
     
     if(nodes[nodename] && nodes[nodename].includes(id)) {
@@ -63,7 +61,7 @@ const sendChildMessageToClients = (msg) => {
       else {
         sendToClients(JSON.stringify(json.data), json.node);
       }
-    } else console.log(json);
+    } 
   }
   catch(e){
     console.log(e);
@@ -145,7 +143,6 @@ wsServer.on('request', function(request) {
       
       // get the client's node list 
       clientNodeList[userID] = json.nodes;
-      console.log(json.nodes)
       json.nodes.forEach((node) => {
         if(!nodes.hasOwnProperty(node)) nodes[node] = [];
         nodes[node].push(userID);
@@ -156,7 +153,6 @@ wsServer.on('request', function(request) {
     }
     catch(e){
       console.log(e);
-      console.log(msg);
     }
   });
 
@@ -166,9 +162,9 @@ wsServer.on('request', function(request) {
     delete clientNodeList[userID];
 
     // delete userID from nodes
-    for(node in nodes){
-      node = node.filter((id) => {return id !== userID});
-    }
+    Object.keys(nodes).forEach((node) => {
+      nodes[node] = nodes[node].filter(id=> id !== userID);
+    });
 
     // update child processes with node list 
     sendToChildProcess(file_walk, JSON.stringify({ nodes: Object.keys(nodes)}));
