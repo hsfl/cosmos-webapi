@@ -1,5 +1,7 @@
 const { agent_req } = require("../utils/exec");
 const hostNode = process.env.HOST_NODE;
+const { SendToParentProcess } = require("./process");
+
 
 function getFileList(type, json){
     var retList = {}; 
@@ -55,7 +57,7 @@ function maintainFileList(){
                     outgoing: outgoingFiles,
                     incoming: incomingFiles
                 }
-                process.send(JSON.stringify(message));
+                SendToParentProcess(message, "any");
             }
         });
     });

@@ -1,5 +1,5 @@
 const { agent_req } = require("../utils/exec");
-const { ChildSendMessage } = require("process");
+const { SendToParentProcess } = require("./process");
 
 const execNodes = [];
 
@@ -22,7 +22,7 @@ function maintainEventQueue(node){
                     node_type: "event_queue",
                     queue: event_list.output
                 };
-                ChildSendMessage(JSON.stringify(eventQueue));
+                SendToParentProcess(eventQueue, node);
             }
         }
         catch(e){}

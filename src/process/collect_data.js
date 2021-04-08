@@ -1,6 +1,6 @@
 const { dbInsertANY } = require("../database");
 const { agent_req } = require("../utils/exec");
-const { ChildSendMessage } = require("process");
+const { SendToParentProcess } = require("./process");
 
 var agentList = [];
 
@@ -19,21 +19,21 @@ function collectData(agent, node){
             const sohJson = JSON.parse(resp);
             if(sohJson.output){
                 var soh = sohJson.output;
-                var nodeName = soh.node_name;
-                if(nodeName){
-                    dbInsertANY(soh);
-                    ChildSendMessage(soh, nodeName);
-                }
+                //dbInsertANY(soh);
+                soh.node_type = [node, agent].join(":");
+                // console.log(soh);
+                SendToParentProcess(soh, node);
+
             }
         }
         catch(e){ 
-            // console.error(e); 
+            // console.log(`Error Parsing SOH ${node} ${agent} :${resp}`);
         }
     });
 }
 
 function collectAgentData(){
-    agentList.forEach(e => collectData(e.agent_proc, e.agent_node));
+    agentList.forEach(e => collectData(e.agent, e.node));
 }
 
 setInterval(collectAgentData, 5000);

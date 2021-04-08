@@ -20,7 +20,7 @@ const getUniqueID = () => {
 
 const sendClient = (clientID, json) => {
   if(clients[clientID]){
-    console.log(`sending to cliend ${clientID}: ${json}`);
+    console.log(`[SND CLIENT] ${clientID}: ${json}`);
     clients[clientID].sendUTF(json);
   }
 }
@@ -30,8 +30,7 @@ const sendClient = (clientID, json) => {
  */
 const sendAllClients = (json) => {
   Object.entries(clients).forEach(([id,connection]) => {
-    console.log(`sending to ${id}`);
-    console.log(json);
+    console.log(`[SND ALL CLIENT] ${id} ${json}`);
     connection.sendUTF(json);
   });
 }
@@ -39,13 +38,36 @@ const sendAllClients = (json) => {
 /**
  * sending json to clients in nodes[nodename]
  * @param {string} json 
- * @param {string} nodename 
  */
 const sendToClients = (json, nodename) => {
+  if(clients.length > 0) console.log(nodes);
+  console.log(`sending nodes ${nodename}`);
+  console.log(nodes);
   Object.entries(clients).forEach(([id,connection]) => {
-    console.log(`sending to cliend ${id}: ${json}`);
-    if(nodes[nodename].contains(id)) connection.sendUTF(json)
+    
+    if(nodes[nodename] && nodes[nodename].includes(id)) {
+      console.log(`[SND CLIENT] ${id}: ${json}`);
+      connection.sendUTF(json);
+    }
   });
+}
+
+const sendChildMessageToClients = (msg) => {
+  try{
+    const json = JSON.parse(msg); 
+    
+    if(json.data && json.node){
+      if(json.node === 'any') {
+        sendAllClients(JSON.stringify(json.data));
+      }
+      else {
+        sendToClients(JSON.stringify(json.data), json.node);
+      }
+    } else console.log(json);
+  }
+  catch(e){
+    console.log(e);
+  }
 }
 
 /**
@@ -54,7 +76,7 @@ const sendToClients = (json, nodename) => {
  * @param {object} message 
  */
 const sendToChildProcess = (child, message) => {
-  console.log("sending to child", message);
+   console.log(`[TO CHILD], ${message}`);
   child.send(message);
 }
 
@@ -63,40 +85,33 @@ const { fork } = require('child_process');
 
 // process: collect data loop 
 const collect_data = fork('./src/process/collect_data.js');
-collect_data.on('message', (message) => {
-  sendToClients(message.data, message.nodename);
-});
+collect_data.on('message', message => sendChildMessageToClients(message));
 
 // process: file walk loop 
 const file_walk = fork('./src/process/incoming_filewalk.js');
-file_walk.on('message', (message) => {
-  sendToClients(message.data, message.nodename);
-});
+file_walk.on('message', (message) => sendChildMessageToClients(message));
 
 // process: event queue loop 
 const event_queue = fork('./src/process/event_queue.js');
-event_queue.on('message', (message) => {
-  sendToClients(message.data, message.nodename);
-});
+event_queue.on('message', (message) => sendChildMessageToClients(message));
 
 // process: file list loop ( list of outgoing/incoming files for hostNode )
 const file_list = fork('./src/process/file_list.js');
-file_list.on('message', (message) => {
-  sendAllClients(message.data);
-});
+file_list.on('message', (message) => sendChildMessageToClients(message));
 
 // process: agent list loop
 const agent_list = fork('./src/process/agent_list.js');
 agent_list.on('message', (message) => {
 
   try {
-    const agents = JSON.parse(message);
-    if(agents){
+    const msg = JSON.parse(message);
+    if(msg.data){
+      const agents = msg.data;
         try {
           Object.entries(clientNodeList).forEach(([id, nodeList]) => {
             const agentList = agents.filter(e => nodeList.includes(e.node));
-            const msg = { node_type : 'list', agent_list: agentList };
-            sendClient(id, JSON.stringify(msg));
+            const data = { node_type : 'list', agent_list: agentList };
+            sendClient(id, JSON.stringify(data));
           });
         }
         catch(e){ console.log(e); }
@@ -105,7 +120,7 @@ agent_list.on('message', (message) => {
 
       // send data to other processes 
       sendToChildProcess(event_queue, JSON.stringify({ ExecNodes: execList }));
-      sendToChildProcess(collect_data, message);
+      sendToChildProcess(collect_data, JSON.stringify(msg.data));
     }
   }
   catch(e) {
@@ -128,17 +143,16 @@ wsServer.on('request', function(request) {
     try {
       const json = JSON.parse(msg.utf8Data);
       
-
       // get the client's node list 
       clientNodeList[userID] = json.nodes;
-      console.log(clientNodeList);
-      for(node in msg.nodes){
-        if(!nodes.includes(node)) nodes[node] = [];
+      console.log(json.nodes)
+      json.nodes.forEach((node) => {
+        if(!nodes.hasOwnProperty(node)) nodes[node] = [];
         nodes[node].push(userID);
-      }
+      }); 
 
       // update child processes with node list 
-      sendToChildProcess(file_walk, { nodes: Object.keys(nodes)});
+      sendToChildProcess(file_walk, JSON.stringify({ nodes: Object.keys(nodes)}));
     }
     catch(e){
       console.log(e);
@@ -157,7 +171,7 @@ wsServer.on('request', function(request) {
     }
 
     // update child processes with node list 
-    sendToChildProcess(file_walk, { nodes: Object.keys(nodes)});
+    sendToChildProcess(file_walk, JSON.stringify({ nodes: Object.keys(nodes)}));
   });
 });
 

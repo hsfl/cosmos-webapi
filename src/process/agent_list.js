@@ -1,4 +1,5 @@
 const { agent_req } = require("../utils/exec");
+const { SendToParentProcess } = require("./process");
 
 /* agent list_json expects:
    {"agent_list":[
@@ -25,7 +26,7 @@ function getAgentList() {
     agent_req("list_json", (resp) => {
         const list = formatListFromRequest(resp);
         if(list && list.length > 0){
-            process.send(JSON.stringify(list));
+            SendToParentProcess(list, "any");
         }
         
     });
