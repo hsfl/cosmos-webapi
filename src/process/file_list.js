@@ -1,4 +1,3 @@
-const { nodeIsIncluded } = require("../utils/cosmos_utils");
 const { agent_req } = require("../utils/exec");
 const hostNode = process.env.HOST_NODE;
 
@@ -7,7 +6,7 @@ function getFileList(type, json){
     var list = type === 'outgoing'? json.outgoing : json.incoming;
     list.forEach(node => {
         const nodeName = node.node; 
-        if(node.count !== 0 && nodeIsIncluded(nodeName)){
+        if(node.count){
             retList[String(nodeName)] = node.files;
         }
     });

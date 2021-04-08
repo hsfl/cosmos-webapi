@@ -1,9 +1,19 @@
 const { listAllNodes, getNodeDir, gzLineByLine } = require("../utils/file");
 const { nodeIsIncluded  } = require("../utils/cosmos_utils");
 const { dbFind , dbInsert , dbFindAndReplace } = require("../database");
-
+const { ChildSendMessage } = require("process");
 const fs = require('fs');
 const path = require('path');
+
+var nodelist = [];
+// receive list of nodes from parent process 
+process.on('message', (message) => {
+    nodelist = message.nodes; 
+    if(nodelist.length > 0)
+        console.log(nodelist);
+}); 
+
+
 
 function makeDirectory(dir) {
     if (!fs.existsSync(dir)){
@@ -108,7 +118,8 @@ function ingestEventFile(filePath, nodeName) {
                             event_name: eventJson.event_name
                         };
                         dbFindAndReplace(process.env.REALM, "any", query, true, eventJson );
-                        process.send(JSON.stringify(eventJson)); // send event to main
+                        // process.send(JSON.stringify(eventJson)); // send event to main
+                        ChildSendMessage(eventJson, nodeName);
                     }
                 });
             } 
@@ -120,7 +131,8 @@ function ingestEventFile(filePath, nodeName) {
                     event_name: eventJson.event_name
                 };
                 dbFindAndReplace(process.env.REALM, "any", query, true, eventJson );
-                process.send(JSON.stringify(eventJson)); // send event to main
+                //process.send(JSON.stringify(eventJson)); // send event to main
+                ChildSendMessage(eventJson, nodeName);
             }
         }
         else {

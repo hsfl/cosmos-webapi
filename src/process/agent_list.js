@@ -7,14 +7,12 @@ const { agent_req } = require("../utils/exec");
     ]}
  */ 
 function formatListFromRequest(resp){
-    var list = {};
-    list['node_type'] = "list";
-    list['agent_list'] = [];
+    var list = [];
     try {
         const resp_json = JSON.parse(resp);
         const agentList = resp_json['agent_list'];
         agentList.forEach(a => {
-            list['agent_list'].push({agent: a.agent_proc, utc: a.agent_utc});
+            list.push({agent: a.agent_proc, utc: a.agent_utc, node: a.agent_node});
         });
         return list; 
     }
@@ -26,7 +24,7 @@ function formatListFromRequest(resp){
 function getAgentList() {
     agent_req("list_json", (resp) => {
         const list = formatListFromRequest(resp);
-        if(list['agent_list'] && list['agent_list'].length > 0){
+        if(list && list.length > 0){
             process.send(JSON.stringify(list));
         }
         
