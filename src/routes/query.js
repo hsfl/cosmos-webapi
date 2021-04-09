@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
-const { dbConnect } = require('../database.js');
+const { dbFind, dbFindOne } = require('../database.js');
 
 
 const emptyResponse ={"error":"Empty Response."};
@@ -32,30 +32,28 @@ router.post('/:realm/:nodeProcess/', (req, res) => {
     const options = req.body['options'] ? req.body['options'] : {};
     const multiple = req.body['multiple']? req.body['multiple'] : false;
     const query = req.body['query']? req.body['query'] : {};
-
-    dbConnect(function(err, db) {
-        if (err) throw err;
-
-        var dbo = db.db(dbName);
-        const collection = dbo.collection(collectionName);
-        
-        if(multiple === true){
-            collection.find(query, options).toArray(function(err, result){
-                if(err) throw err;                 
-                if(result.length > 0) res.json(result);
-                else res.json(emptyResponse);
-                db.close(); 
-            });
-        }
-        else {
-            collection.findOne(query, options, function(err, result){
-                if(err) throw err; 
-                if(!result) res.json(emptyResponse);
-                else res.json(result);
-                db.close(); 
-            });
-        }
-  });
+    if(multiple === true){
+        dbFind(dbName, collectionName, query, options, (stat, resp) => {
+            if(stat.success) {
+                res.json(resp);
+            }
+            else{
+                console.log(stat.error);
+                res.json(emptyResponse);
+            }
+        });
+    } 
+    else {
+        dbFindOne(dbName, collectionName, query, options, (stat, resp) => {
+            if(stat.success) {
+                res.json(resp);
+            }
+            else{
+                console.log(stat.error);
+                res.json(emptyResponse);
+            }
+        });
+    }
   
   
 });

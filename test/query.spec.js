@@ -7,13 +7,27 @@ var assert = require('assert');
  * dbName = REALM 
  * collectionName = node:process
  */
-describe("GET /query/test/tc/ {multiple: true}", function() {
+describe("POST /query/test/tc/ {multiple: true}", function() {
   it("it should have status code 200", function(done) {
     const data = {multiple: true};
     supertest(app)
-    .get('/query/test/tc')
+    .post('/query/test/tc')
     .send(data)
     .expect(200)
+    .expect('Content-Type',/json/)
+    .end(done);
+  });
+
+});
+
+describe("POST /query/test/tc/ {multiple: false}", function() {
+  it("it should have status code 200", function(done) {
+    const data = {multiple: false};
+    supertest(app)
+    .post('/query/test/tc')
+    .send(data)
+    .expect(200)
+    .expect('Content-Type',/json/)
     .end(done);
   });
 

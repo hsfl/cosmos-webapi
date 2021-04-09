@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
-const { dbConnect } = require('../database.js');
+const { dbFind, dbConnect, dbInsert } = require('../database.js');
 const { agent_req, execute }  = require('../utils/exec.js');
 const emptyResponse = {"error":"Empty Response."};
 
@@ -83,18 +83,11 @@ router.post('/agent', (req, res) => {
 router.post('/:commandNode/', (req, res) => {
   const collectionName = req.params.commandNode;
   const entry = req.body['command'];
-  dbConnect(function(err, db) {
-    if (err) throw err;
-
-    var dbo = db.db(process.env.REALM);
-    const collection = dbo.collection(`${collectionName}:commands`);
-    // TODO?: write to  /cosmos/nodes/temp/exec/node_mjd.event
-    collection.insertOne(entry, function(err) {
-      if(err) res.json({"error":"Error inserting into database."});                 
-      else res.json({"message":"Successfully inserted command"});
-      db.close(); 
-    });
+  dbInsert(process.env.REALM, collectionName, entry, (stat) => {
+    if(stat.error) res.json({"error":"Error inserting into database."});
+    else res.json({"message":"Successfully inserted command"});
   });
+
 });
 
 /**  route GET /commands/:commandNode
@@ -106,18 +99,11 @@ test this with :
 */
 router.get('/:commandNode/', (req, res) => {
   const collectionName = req.params.commandNode;
-  dbConnect(function(err, db) {
-    if (err) throw err;
-
-    var dbo = db.db(process.env.REALM);
-    const collection = dbo.collection(`${collectionName}:commands`);
-
-    collection.find().toArray(function(err, result){
-      if(err) throw err;                 
-      if(result.length > 0) res.json(result);
-      else res.json(emptyResponse);
-      db.close(); 
-    });
+  dbFind(process.env.REALM, collectionName, {},{}, (stat, result) => {
+    if(stat.error) res.json({"error":"Error finding."});
+    else {
+      res.json(result);
+    }
   });
 });
 
