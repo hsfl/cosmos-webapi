@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
-const { dbFind, dbConnect, dbInsert } = require('../database.js');
+const { dbFind, dbDeleteOne, dbInsert } = require('../database.js');
 const { agent_req, execute }  = require('../utils/exec.js');
 const emptyResponse = {"error":"Empty Response."};
 
@@ -81,9 +81,9 @@ router.post('/agent', (req, res) => {
       http://localhost:3000/commands/testNode
 */
 router.post('/:commandNode/', (req, res) => {
-  const collectionName = req.params.commandNode;
+  const node = req.params.commandNode;
   const entry = req.body['command'];
-  dbInsert(process.env.REALM, collectionName, entry, (stat) => {
+  dbInsert(process.env.REALM, `${node}:commands`, entry, (stat) => {
     if(stat.error) res.json({"error":"Error inserting into database."});
     else res.json({"message":"Successfully inserted command"});
   });
@@ -98,8 +98,8 @@ test this with :
     http://localhost:3000/commands/testNode
 */
 router.get('/:commandNode/', (req, res) => {
-  const collectionName = req.params.commandNode;
-  dbFind(process.env.REALM, collectionName, {},{}, (stat, result) => {
+  const node = req.params.commandNode;
+  dbFind(process.env.REALM, `${node}:commands`, {},{}, (stat, result) => {
     if(stat.error) res.json({"error":"Error finding."});
     else {
       res.json(result);
@@ -117,24 +117,16 @@ router.get('/:commandNode/', (req, res) => {
     http://localhost:3000/commands/testNode
 */
 router.delete('/:commandNode/', (req, res) => {
-  const collectionName = req.params.commandNode;
+  const node = req.params.commandNode;
   const eventToDelete = req.body['event_name'];
   if(!eventToDelete || eventToDelete === undefined){
     res.sendStatus(400);
     return;
   }
   else {
-    dbConnect(function(err, db) {
-      if (err) throw err;
-  
-      var dbo = db.db(process.env.REALM);
-      const collection = dbo.collection(`${collectionName}:commands`);
-  
-      collection.deleteOne({"event_name":`${eventToDelete}`},function(err){
-        if(err) res.json({"error":"Error deleting."});                 
-        else res.json({"message":"Successfully deleted command"});
-        db.close(); 
-      });
+    dbDeleteOne(process.env.REALM, `${node}:commands`, {"event_name":`${eventToDelete}`}, (err) => {
+      if(err) res.json({"error":"Error deleting."});                 
+      else res.json({"message":"Successfully deleted command"});
     });
   }
   

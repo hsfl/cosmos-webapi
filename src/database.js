@@ -68,22 +68,38 @@ function dbFindOne(dbName, collectionName, query, options, callback){
 
 function dbFindAndReplace(dbName, collectionName, query, upsert, doc, callback) {
     dbConnect((err, db) => {
-        if(err) throw err; 
+        if(err) {
+            callback(err, {}); 
+            return;
+        }
         var dbo = db.db(dbName);
         const collection = dbo.collection(collectionName);
         collection.replaceOne(query, doc, {upsert: upsert}, (err, res) => {
-            if(err) console.log("Error finding.");  
             db.close();   
-            callback(res);
+            callback(err, res);
+        });
+    });
+}
+
+function dbDeleteOne(dbName, collectionName, doc, callback){
+    dbConnect(function(err, db) {
+        if (err) throw err;
+    
+        var dbo = db.db(dbName);
+        const collection = dbo.collection(collectionName);
+    
+        collection.deleteOne(doc, (err) => {
+          callback(err);
+          db.close(); 
         });
     });
 }
 
 module.exports = { 
-    dbConnect,
     dbInsertANY,
     dbFind,
     dbFindOne,
     dbInsert,
-    dbFindAndReplace 
+    dbFindAndReplace,
+    dbDeleteOne
 };
