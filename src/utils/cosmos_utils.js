@@ -8,21 +8,6 @@ const AgentMessageType = {
     TIME : 5
 }
 
-function nodeIsIncluded(node){
-    const included = process.env.INCLUDE_NODES; 
-    const excluded = process.env.EXCLUDE_NODES; 
-    if(included.includes(node)){
-        return true; 
-    }
-    else if(excluded.includes(node)){
-        return false;
-    }
-    if(included.includes("*")){
-        return true;
-    }
-    return false; 
-}
-
 function getAnyExecSOH(callback){
     agent_req("any exec soh", (msg) => {
         try{
@@ -37,6 +22,5 @@ function getAnyExecSOH(callback){
 
 
 module.exports = {
-    nodeIsIncluded,
     getAnyExecSOH
 };

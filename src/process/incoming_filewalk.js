@@ -1,5 +1,4 @@
 const { listAllNodes, getNodeDir, gzLineByLine } = require("../utils/file");
-const { nodeIsIncluded  } = require("../utils/cosmos_utils");
 const { dbFind , dbInsert , dbFindAndReplace } = require("../database");
 const { SendToParentProcess } = require("./process");
 const fs = require('fs');
@@ -165,7 +164,7 @@ function moveIncomingFile(filePath, newDirName){
 function fileWalkTelemetry() {
     const nodeNames = listAllNodes(); 
     nodeNames.forEach( nodeName => {
-        if(nodeIsIncluded(nodeName)){
+        if(nodelist.includes(nodeName)){
             const sohFileList = getTelemetryFileList(nodeName);
             sohFileList.forEach((file)=>{ 
                 ingestTelemetryFile(file, nodeName);
@@ -177,7 +176,7 @@ function fileWalkTelemetry() {
 function fileWalkEvent() {
     const nodeNames = listAllNodes(); 
     nodeNames.forEach( nodeName => {
-        if(nodeIsIncluded(nodeName)){
+        if(nodelist.includes(nodeName)){
             const execFileList = getEventFileList(nodeName);
             execFileList.forEach((file) => { 
                 ingestEventFile(file, nodeName);
