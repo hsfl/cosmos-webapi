@@ -59,7 +59,9 @@ function ingestTelemetryFile(filePath, nodeName) {
             if(json.node_utc) {
                 // findOne in db REALM, collection "any" where node_utc == json.node_utc
                 const qFields = {node_utc: json.node_utc};
-                let dbRes = dbFind(process.env.REALM, "any", qFields);
+                let dbRes = dbFind(process.env.REALM, "any", qFields, {}, (res) => {
+                    console.log(res);
+                });
                 
                 json.node_type = node_type;
                 if(!dbRes){
@@ -116,8 +118,9 @@ function ingestEventFile(filePath, nodeName) {
                             event_utc: eventJson.event_utc,
                             event_name: eventJson.event_name
                         };
-                        dbFindAndReplace(process.env.REALM, "any", query, true, eventJson );
-                        // process.send(JSON.stringify(eventJson)); // send event to main
+                        dbFindAndReplace(process.env.REALM, "any", query, true, eventJson, (res) => {
+                            console.log(res);
+                        });
                         SendToParentProcess(eventJson, nodeName);
                     }
                 });
@@ -129,8 +132,10 @@ function ingestEventFile(filePath, nodeName) {
                     event_utc: eventJson.event_utc,
                     event_name: eventJson.event_name
                 };
-                dbFindAndReplace(process.env.REALM, "any", query, true, eventJson );
-                //process.send(JSON.stringify(eventJson)); // send event to main
+                dbFindAndReplace(process.env.REALM, "any", query, true, eventJson, (res) => {
+                    console.log(res);
+                });
+
                 SendToParentProcess(eventJson, nodeName);
             }
         }
