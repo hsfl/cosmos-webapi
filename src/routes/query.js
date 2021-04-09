@@ -25,7 +25,7 @@ curl --header "Content-Type: application/json" \
     http://localhost:3000/query/test/tc
 */
 // TODO: update all calls to POST /query in cosmos-web with GET 
-router.get('/:realm/:nodeProcess/', (req, res) => {
+router.post('/:realm/:nodeProcess/', (req, res) => {
     const dbName = req.params.realm;
     const collectionName = req.params.nodeProcess;
 
