@@ -64,12 +64,10 @@ router.post('/', (req, res) => {
 */
 
 router.post('/agent', (req, res) => {
-
   var cmd = req.body.command;
-  agent_req(cmd, (result)=>{
-    res.json(result);
+  agent_req(cmd, (result) => {
+    res.send(result);
   });
-
 });
 
 /**  route POST /commands/:commandNode
