@@ -20,7 +20,6 @@ const getUniqueID = () => {
 
 const sendClient = (clientID, json) => {
   if(clients[clientID]){
-    console.log(`[SND CLIENT] ${clientID}: ${json}`);
     clients[clientID].sendUTF(json);
   }
 }
@@ -30,7 +29,6 @@ const sendClient = (clientID, json) => {
  */
 const sendAllClients = (json) => {
   Object.entries(clients).forEach(([id,connection]) => {
-    console.log(`[SND ALL CLIENT] ${id} ${json}`);
     connection.sendUTF(json);
   });
 }
@@ -40,11 +38,10 @@ const sendAllClients = (json) => {
  * @param {string} json 
  */
 const sendToClients = (json, nodename) => {
-  if(clients.length > 0) console.log(nodes);
+  if(clients.length > 0)
   Object.entries(clients).forEach(([id,connection]) => {
     
     if(nodes[nodename] && nodes[nodename].includes(id)) {
-      console.log(`[SND CLIENT] ${id}: ${json}`);
       connection.sendUTF(json);
     }
   });
@@ -74,7 +71,6 @@ const sendChildMessageToClients = (msg) => {
  * @param {object} message 
  */
 const sendToChildProcess = (child, message) => {
-   console.log(`[TO CHILD], ${message}`);
   child.send(message);
 }
 
@@ -107,9 +103,12 @@ agent_list.on('message', (message) => {
       const agents = msg.data;
         try {
           Object.entries(clientNodeList).forEach(([id, nodeList]) => {
-            const agentList = agents.filter(e => nodeList.includes(e.node));
-            const data = { node_type : 'list', agent_list: agentList };
-            sendClient(id, JSON.stringify(data));
+            if(nodeList){
+              const agentList = agents.filter(e => nodeList.includes(e.node));
+              const data = { node_type : 'list', agent_list: agentList };
+              sendClient(id, JSON.stringify(data));
+            }
+
           });
         }
         catch(e){ console.log(e); }
