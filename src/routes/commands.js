@@ -65,7 +65,7 @@ router.post('/', (req, res) => {
 
 router.post('/agent', (req, res) => {
 
-  var cmd = req.body['command'];
+  var cmd = req.body.command;
   agent_req(cmd, (result)=>{
     res.json(result);
   });
