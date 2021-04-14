@@ -8,9 +8,9 @@ const wsServer = new webSocketServer({
 });
 
 // I'm maintaining all active connections in this object
-const clients = {}; // userID : connection
-const nodes = {}; // nodename : [userID,...]
-const clientNodeList = {}; // userID : [nodename,...] 
+const clients = {}; // { userID : connection, ...}
+const nodes = {}; // { nodename : [userID,...] ,... }
+const clientNodeList = {}; // { userID : [nodename,...] , ...}
 
 // This code generates unique userid for everyuser.
 const getUniqueID = () => {
@@ -20,6 +20,7 @@ const getUniqueID = () => {
 
 const sendClient = (clientID, json) => {
   if(clients[clientID]){
+    console.log(`TOCLIENT ${clientID}: ${json}`);
     clients[clientID].sendUTF(json);
   }
 }
@@ -28,8 +29,8 @@ const sendClient = (clientID, json) => {
  * @param {string} json 
  */
 const sendAllClients = (json) => {
-  Object.entries(clients).forEach(([id,connection]) => {
-    connection.sendUTF(json);
+  Object.keys(clients).forEach((id) => {
+    sendClient(id, json);
   });
 }
 
@@ -38,19 +39,20 @@ const sendAllClients = (json) => {
  * @param {string} json 
  */
 const sendToClients = (json, nodename) => {
-  if(clients.length > 0)
-  Object.entries(clients).forEach(([id,connection]) => {
-    
+  Object.keys(clients).forEach((id) => {
     if(nodes[nodename] && nodes[nodename].includes(id)) {
-      connection.sendUTF(json);
+      sendClient(id, json);
     }
   });
 }
 
+/**
+ * send message from forked process to client list
+ * @param {object} msg 
+ */
 const sendChildMessageToClients = (msg) => {
   try{
     const json = JSON.parse(msg); 
-    
     if(json.data && json.node){
       if(json.node === 'any') {
         sendAllClients(JSON.stringify(json.data));
@@ -126,6 +128,27 @@ agent_list.on('message', (message) => {
   }
 });
 
+/**
+ * update current list of clients & nodes
+ * @param {string} clientID 
+ * @param {Array} nodes 
+ */
+const updateClientNodeList = (clientID, clientNodes) => {
+  if (clientNodeList[clientID]) {
+    // remove clientID from each node in nodes if not in clientNodes
+    clientNodeList[clientID].forEach((node) => {
+      if (!clientNodes.includes(node)){
+        nodes[node] = nodes[node].filter(id => id !== clientID);
+      }
+    });
+  }
+  clientNodes.forEach((node) => {
+    if(!nodes[node]) nodes[node] = [clientID]; 
+    else if(!nodes[node].includes(clientID)) nodes[node].push(clientID);
+  });
+
+  clientNodeList[clientID] = clientNodes; 
+}
 
 wsServer.on('request', function(request) {
   var userID = getUniqueID();
@@ -133,19 +156,14 @@ wsServer.on('request', function(request) {
   // You can rewrite this part of the code to accept only the requests from allowed origin
   const connection = request.accept(null, request.origin);
   clients[userID] = connection;
-  clientNodeList[userID] = [];
+  updateClientNodeList(userID, []);
   console.log('connected: ' + userID + ' in ' + Object.getOwnPropertyNames(clients))
 
   connection.on('message', function(msg) {
     try {
       const json = JSON.parse(msg.utf8Data);
-      
-      // get the client's node list 
-      clientNodeList[userID] = json.nodes;
-      json.nodes.forEach((node) => {
-        if(!nodes.hasOwnProperty(node)) nodes[node] = [];
-        nodes[node].push(userID);
-      }); 
+
+      updateClientNodeList(userID, json.nodes);
 
       // update child processes with node list 
       sendToChildProcess(file_walk, JSON.stringify({ nodes: Object.keys(nodes)}));
@@ -157,13 +175,9 @@ wsServer.on('request', function(request) {
 
   connection.on('close', function(connection) {
     console.log((new Date()) + " Peer " + userID + " disconnected.");
+    updateClientNodeList(userID, []);
     delete clients[userID];
     delete clientNodeList[userID];
-
-    // delete userID from nodes
-    Object.keys(nodes).forEach((node) => {
-      nodes[node] = nodes[node].filter(id=> id !== userID);
-    });
 
     // update child processes with node list 
     sendToChildProcess(file_walk, JSON.stringify({ nodes: Object.keys(nodes)}));
