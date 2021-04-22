@@ -1,5 +1,6 @@
 const { dbInsertByUTC } = require("../database");
 const { agent_req } = require("../utils/exec");
+const {currentMJD } = require('../utils/time');
 const { SendToParentProcess } = require("./process");
 
 var agentList = [];
@@ -23,11 +24,9 @@ function collectData(agent, node){
                     soh.node_utc = currentMJD();
                 }
                 soh.node_type = [node, agent].join(":");
-                dbInsertByUTC(soh, `${node}:soh`, (resp) => {
-                    console.log(resp);
+                dbInsertByUTC(`${node}:soh`, soh, (resp) => {
+                    SendToParentProcess(soh, node);
                 });
-                SendToParentProcess(soh, node);
-
             }
         }
         catch(e){ 
