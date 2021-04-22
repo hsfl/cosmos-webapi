@@ -24,7 +24,7 @@ curl --header "Content-Type: application/json" \
     --data '{"multiple": true}' \
     http://localhost:3000/query/test/tc
 */
-// TODO: update all calls to POST /query in cosmos-web with GET 
+// TODO: update all calls to POST /query in cosmos-web with GET, replace below with get 
 router.post('/:realm/:nodeProcess/', (req, res) => {
     const dbName = req.params.realm;
     const collectionName = req.params.nodeProcess;
@@ -54,8 +54,6 @@ router.post('/:realm/:nodeProcess/', (req, res) => {
             }
         });
     }
-  
-  
 });
 
 
