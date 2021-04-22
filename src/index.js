@@ -17,6 +17,7 @@ const commandsRoute = require('./routes/commands');
 const queryRoute = require('./routes/query');
 const nodesRoute = require('./routes/nodes');
 const agentsRoute = require('./routes/agents');
+const eventsRoute = require('./routes/events');
 
 // Express server
 const app = express();
@@ -31,6 +32,7 @@ app.use('/commands', commandsRoute);
 app.use('/query', queryRoute);
 app.use('//nodes', nodesRoute);
 app.use('//agents', agentsRoute);
+app.use('/event', eventsRoute);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

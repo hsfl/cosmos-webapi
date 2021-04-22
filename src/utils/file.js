@@ -156,7 +156,20 @@ function gzLineByLine(file, onLine, onError, callback ) {
     
 }
 
-
+function writeEventFile(node, eventStr, callback) {
+    //write eventStr to ~/cosmos/nodes/node/outgoing/exec/node_mjd.event
+    const dir = path.join(getNodeDir(node), 'outgoing/exec/');
+    const utc = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    const eventFile = path.join(dir, `${node}_${utc}.event`);
+    try {
+        fs.writeFile(eventFile, eventStr, (err) => {
+            if(err) callback(err);
+            else callback(); 
+        });
+    } catch (e) {
+        callback(e);
+    }
+}
 
 module.exports = {
     listAllNodes,
@@ -164,5 +177,6 @@ module.exports = {
     listAllPieces,
     listAllNamespace,
     getNodeDir,
-    gzLineByLine
+    gzLineByLine,
+    writeEventFile,
 };

@@ -20,7 +20,7 @@ const getUniqueID = () => {
 
 const sendClient = (clientID, json) => {
   if(clients[clientID]){
-    console.log(`TOCLIENT ${clientID}: ${json}`);
+    //console.log(`TOCLIENT ${clientID}: ${json}`);
     clients[clientID].sendUTF(json);
   }
 }
@@ -142,6 +142,7 @@ const updateClientNodeList = (clientID, clientNodes) => {
       }
     });
   }
+  
   clientNodes.forEach((node) => {
     if(!nodes[node]) nodes[node] = [clientID]; 
     else if(!nodes[node].includes(clientID)) nodes[node].push(clientID);
