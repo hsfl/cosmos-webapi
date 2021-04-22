@@ -19,9 +19,13 @@ function collectData(agent, node){
             const sohJson = JSON.parse(resp);
             if(sohJson.output){
                 var soh = sohJson.output;
-                //dbInsertANY(soh);
+                if(!soh.node_utc){
+                    soh.node_utc = currentMJD();
+                }
                 soh.node_type = [node, agent].join(":");
-                // console.log(soh);
+                dbInsertByUTC(soh, `${node}:soh`, (resp) => {
+                    console.log(resp);
+                });
                 SendToParentProcess(soh, node);
 
             }
