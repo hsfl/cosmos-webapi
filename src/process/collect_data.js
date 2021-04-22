@@ -1,4 +1,4 @@
-const { dbInsertANY } = require("../database");
+const { dbInsertByUTC } = require("../database");
 const { agent_req } = require("../utils/exec");
 const { SendToParentProcess } = require("./process");
 
