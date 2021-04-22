@@ -1,6 +1,5 @@
 const { MongoClient } = require('mongodb');
-
-const uri = process.env.DB_URI;
+const { within30Days } = require('./utils/time');
 
 function dbConnect (callback) {
     MongoClient.connect(process.env.DB_URI, { useUnifiedTopology:true }, callback);
@@ -9,9 +8,9 @@ function dbConnect (callback) {
 const errorConnect = { error: "Error Connecting to MongoDB"};
 const successStatus = { status: "Success"};
 
-//! insert doc to db REALM collection "any"
-function dbInsertANY(doc){
-    return dbInsert(process.env.REALM, "any", doc);
+//! insert doc to db 'current' collection `${node}:soh`
+function dbInsertSOH(doc, node){
+    return dbInsert('current', `${node}:soh`, doc);
 }
 
 function dbInsert(dbName, collectionName,doc, callback){
@@ -28,6 +27,16 @@ function dbInsert(dbName, collectionName,doc, callback){
             db.close();   
         });
     });
+}
+
+function dbInsertByUTC(collectionName, doc, callback) {
+    let dbName = 'current'; 
+    if(doc.node_utc){
+        dbName = dbNameByMJD(doc.node_utc);
+    }
+    // console.log(`[DBINSERT] ${dbName}-${collectionName} ${JSON.stringify(doc)}`);
+
+    dbInsert(dbName, collectionName, doc, callback);
 }
 
 function dbFind(dbName, collectionName, query, options, callback){
@@ -94,12 +103,21 @@ function dbDeleteOne(dbName, collectionName, doc, callback){
         });
     });
 }
+/**
+ * 
+ * @param {Number} mjd 
+ */
+function dbNameByMJD(mjd) {
+    if(within30Days(mjd)) return 'current';
+    else return mjd2String(mjd).substring(0,7);
+}
 
 module.exports = { 
-    dbInsertANY,
+    dbInsertByUTC,
     dbFind,
     dbFindOne,
     dbInsert,
     dbFindAndReplace,
-    dbDeleteOne
+    dbDeleteOne,
+    dbNameByMJD
 };

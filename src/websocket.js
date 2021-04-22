@@ -20,7 +20,7 @@ const getUniqueID = () => {
 
 const sendClient = (clientID, json) => {
   if(clients[clientID]){
-    console.log(`TOCLIENT ${clientID}: ${json}`);
+    // console.log(`TOCLIENT ${clientID}: ${json}`);
     clients[clientID].sendUTF(json);
   }
 }

@@ -1,5 +1,6 @@
-const { dbInsertANY } = require("../database");
+const { dbInsertByUTC } = require("../database");
 const { agent_req } = require("../utils/exec");
+const {currentMJD } = require('../utils/time');
 const { SendToParentProcess } = require("./process");
 
 var agentList = [];
@@ -19,11 +20,13 @@ function collectData(agent, node){
             const sohJson = JSON.parse(resp);
             if(sohJson.output){
                 var soh = sohJson.output;
-                //dbInsertANY(soh);
+                if(!soh.node_utc){
+                    soh.node_utc = currentMJD();
+                }
                 soh.node_type = [node, agent].join(":");
-                // console.log(soh);
-                SendToParentProcess(soh, node);
-
+                dbInsertByUTC(`${node}:soh`, soh, (resp) => {
+                    SendToParentProcess(soh, node);
+                });
             }
         }
         catch(e){ 
