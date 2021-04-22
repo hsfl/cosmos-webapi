@@ -23,6 +23,8 @@ function collectData(agent, node){
                 if(!soh.node_utc){
                     soh.node_utc = currentMJD();
                 }
+                if(!soh.node_name) soh.node_name = node; 
+                if(!soh.agent_name) soh.agent_name = agent;
                 soh.node_type = [node, agent].join(":");
                 dbInsertByUTC(`${node}:soh`, soh, (resp) => {
                     SendToParentProcess(soh, node);
@@ -30,6 +32,7 @@ function collectData(agent, node){
             }
         }
         catch(e){ 
+            // console.log(e);
             // console.log(`Error Parsing SOH ${node} ${agent} :${resp}`);
         }
     });
