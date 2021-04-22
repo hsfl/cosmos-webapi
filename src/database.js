@@ -1,7 +1,5 @@
 const { MongoClient } = require('mongodb');
-const { MJDtoJavaScriptDate, within30Days } = require('./utils/time');
-
-const uri = process.env.DB_URI;
+const { within30Days } = require('./utils/time');
 
 function dbConnect (callback) {
     MongoClient.connect(process.env.DB_URI, { useUnifiedTopology:true }, callback);
@@ -36,6 +34,7 @@ function dbInsertByUTC(collectionName, doc, callback) {
     if(doc.node_utc){
         dbName = dbNameByMJD(doc.node_utc);
     }
+    // console.log(`[DBINSERT] ${dbName}-${collectionName} ${JSON.stringify(doc)}`);
 
     dbInsert(dbName, collectionName, doc, callback);
 }
