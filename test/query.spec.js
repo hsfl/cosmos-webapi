@@ -2,16 +2,13 @@ var supertest = require('supertest'),
 app = require('../src/index');
 var assert = require('assert');
 
-/**
- * TODO update /test/tc with /dbName/collectionName/ which represents
- * dbName = REALM 
- * collectionName = node:process
- */
-describe("POST /query/current/windev2:soh/ {multiple: true}", function() {
+
+
+describe("POST /query/soh/windev2 { beginDate: 59326.974548611324 }", function() {
   it("it should have status code 200", function(done) {
-    const data = {multiple: true};
+    const data = { beginDate: 59326.974548611324 };
     supertest(app)
-    .post('/query/current/windev2:soh')
+    .post('/query/soh/windev2')
     .send(data)
     .expect(200)
     .expect('Content-Type',/json/)
@@ -20,14 +17,12 @@ describe("POST /query/current/windev2:soh/ {multiple: true}", function() {
 
 });
 
-describe("POST /query/test/tc/ {multiple: false}", function() {
-  it("it should have status code 200", function(done) {
-    const data = {multiple: false};
+describe("POST /query/soh/windev2 ", function() {
+  it("it should have status code 400", function(done) {
+
     supertest(app)
-    .post('/query/test/tc')
-    .send(data)
-    .expect(200)
-    .expect('Content-Type',/json/)
+    .post('/query/soh/windev2')
+    .expect(400)
     .end(done);
   });
 
