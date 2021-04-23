@@ -53,6 +53,11 @@ function MJDtoJavaScriptDate(mjd) {
     .toDate();
 }
 
+function MJD2daysjs(mjd){
+    return dayjs
+        .unix((((mjd + 2400000.5) - 2440587.5) * 86400.0));
+}
+
 /**
  * Calculate the difference between the current time and the date provided, returning
  * the difference as a dayjs object. If the difference is over a day, then a string is returned.
@@ -97,11 +102,13 @@ function within30Days(mjd) {
 }
 
 function currentMJD() {
-    return dateToMJD(dayjs);
+    return dateToMJD(dayjs());
 }
 
 module.exports = {
     dateToMJD,
     within30Days,
     currentMJD,
+    MJDtoJavaScriptDate,
+    MJD2daysjs,
 };

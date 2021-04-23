@@ -1,5 +1,6 @@
 const { MongoClient } = require('mongodb');
-const { within30Days } = require('./utils/time');
+const { within30Days, MJD2daysjs} = require('./utils/time');
+const dayjs = require('dayjs');
 
 function dbConnect (callback) {
     MongoClient.connect(process.env.DB_URI, { useUnifiedTopology:true }, callback);
@@ -112,6 +113,27 @@ function dbNameByMJD(mjd) {
     else return mjd2String(mjd).substring(0,7);
 }
 
+function dbFindQuery(startMJD, collectionName, query, options, callback) {
+    dbConnect((err, db) => {
+        if(err) {
+            callback(errorConnect, []); 
+            return;
+        }
+        if(within30Days(startMJD)) dbName ='current';
+
+        else dbName = MJD2daysjs(startMJD).format('YYYY-MM');
+        console.log(`QUERY ${dbName} ${collectionName}`);
+        db.db(dbName).collection(collectionName).find(query, options).toArray((err, res) => {
+            if(err) console.log(err);
+
+            callback(res);
+            db.close();
+        });
+
+        
+    });
+}
+
 module.exports = { 
     dbInsertByUTC,
     dbFind,
@@ -119,5 +141,6 @@ module.exports = {
     dbInsert,
     dbFindAndReplace,
     dbDeleteOne,
-    dbNameByMJD
+    dbNameByMJD,
+    dbFindQuery
 };
