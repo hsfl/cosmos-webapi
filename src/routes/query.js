@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
-const { dbFind, dbFindOne } = require('../database.js');
+const { dbFind, dbFindOne , dbFindQuery} = require('../database.js');
+const { currentMJD } = require('../utils/time.js');
 
 
 const emptyResponse ={"error":"Empty Response."};
@@ -17,14 +18,32 @@ router.use((req, res, next) => {
   next();
 });
 
+router.post('/soh/:nodeName/', (req, res) => {
+    
+    const start = req.body.beginDate;
+    console.log(req.body);
+    if(!start || typeof start != 'number'){
+        res.sendStatus(400);
+        return; 
+    }
+
+    const collection = `${req.params.nodeName}:soh`;
+
+    const options = req.body.options ? req.body.options : {};
+    const query = req.body.query ? req.body.query : {};
+
+    dbFindQuery(start, collection, query, options, (resp) => {
+        res.json(resp);
+    });
+
+});
 
 /* TEST POST
 curl --header "Content-Type: application/json" \
     --request GET \
-    --data '{"multiple": true}' \
-    http://localhost:3000/query/test/tc
+    --data '{ nodes:['windev2'], beginDate: 59326.974548611324 }' \
+    http://localhost:3000/query/soh
 */
-// TODO: update all calls to POST /query in cosmos-web with GET, replace below with get 
 router.post('/:realm/:nodeProcess/', (req, res) => {
     const dbName = req.params.realm;
     const collectionName = req.params.nodeProcess;
@@ -55,6 +74,9 @@ router.post('/:realm/:nodeProcess/', (req, res) => {
         });
     }
 });
+
+
+
 
 
 module.exports = router;
