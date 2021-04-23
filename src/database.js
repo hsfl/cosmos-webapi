@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const { within30Days, MJD2daysjs} = require('./utils/time');
+const { within30Days, MJD2daysjs, mjdToString } = require('./utils/time');
 const dayjs = require('dayjs');
 
 function dbConnect (callback) {
@@ -110,7 +110,7 @@ function dbDeleteOne(dbName, collectionName, doc, callback){
  */
 function dbNameByMJD(mjd) {
     if(within30Days(mjd)) return 'current';
-    else return mjd2String(mjd).substring(0,7);
+    else return mjdToString(mjd).substring(0,7);
 }
 
 function dbFindQuery(startMJD, collectionName, query, options, callback) {

@@ -1,8 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
-const { dbFind, dbDeleteOne, dbInsert } = require('../database.js');
+const { dbFind, dbDeleteOne, dbInsert, dbNameByMJD } = require('../database.js');
 const { agent_req, execute }  = require('../utils/exec.js');
+const { currentMJD }  = require('../utils/time.js');
 
 //! following line is for parsing JSON data in POST requests
 router.use(bodyParser.json());
@@ -65,7 +66,7 @@ router.post('/', (req, res) => {
 router.post('/agent', (req, res) => {
   var cmd = req.body.command;
   agent_req(cmd, (result) => {
-    res.send(result);
+    res.json(result);
   });
 });
 
@@ -118,15 +119,16 @@ router.get('/:commandNode/', (req, res) => {
 */
 router.delete('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
-  const eventName = req.body.event_name;
-  const eventUTC = req.body.event_utc;
-  if(!eventName || eventName === undefined || !eventUTC || eventUTC === undefined){
+  const event_name = req.body.event_name;
+  const event_utc = req.body.event_utc;
+  console.log(req.body);
+  if(!event_name || event_name === undefined || event_utc === undefined){
     res.sendStatus(400);
     return;
   }
   else {
-    const db = dbNameByMJD(eventUTC);
-    dbDeleteOne(db, `${node}:event`, {"event_name":`${eventName}`}, (err) => {
+    const db = dbNameByMJD(event_utc);
+    dbDeleteOne(db, `${node}:event`, {event_name, event_utc}, (err) => {
       if(err) res.json({"error":"Error deleting."});                 
       else res.json({"message":"Successfully deleted command"});
     });
