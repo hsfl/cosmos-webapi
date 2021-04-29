@@ -7,9 +7,8 @@ require('dotenv').config();
 // Websocket server & database driver
 const client = require('./database');
 
+global.heartbeats = [];
 const wss = require('./websocket');
-
-
 
 // Express Modules
 const namespaceRoute = require('./routes/namespace');

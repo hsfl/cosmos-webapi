@@ -115,5 +115,6 @@ module.exports = {
     currentMJD,
     MJDtoJavaScriptDate,
     MJD2daysjs,
-    mjdToString
+    mjdToString,
+    getDiff
 };
