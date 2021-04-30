@@ -119,9 +119,15 @@ function dbFindQuery(startMJD, collectionName, query, options, callback) {
             callback(errorConnect, []); 
             return;
         }
-        if(within30Days(startMJD)) dbName ='current';
-
-        else dbName = MJD2daysjs(startMJD).format('YYYY-MM');
+        if(startMJD === 'current') {
+            dbName = 'current';
+        }
+        else if(within30Days(startMJD)) {
+            dbName ='current';
+        }
+        else {
+            dbName = MJD2daysjs(startMJD).format('YYYY-MM');
+        }
         // console.log(`QUERY ${dbName} ${collectionName}`);
         db.db(dbName).collection(collectionName).find(query, options).toArray((err, res) => {
             if(err) console.log(err);

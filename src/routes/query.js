@@ -17,7 +17,8 @@ router.use((req, res, next) => {
 
 router.post('/soh/:nodeName/', (req, res) => {
     const start = req.body.beginDate;
-    if(!start || typeof start != 'number'){
+    // start should be either a MJD time or 'current'
+    if(start === undefined || (typeof start !== 'number' && start !== 'current')){
         res.sendStatus(400);
         return; 
     }
