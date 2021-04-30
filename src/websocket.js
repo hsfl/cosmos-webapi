@@ -83,6 +83,14 @@ const { fork } = require('child_process');
 const event_queue = fork('./src/process/event_queue.js');
 event_queue.on('message', (message) => sendChildMessageToClients(message));
 
+// process: file list loop ( list of outgoing/incoming files for hostNode )
+const file_list = fork('./src/process/file_list.js');
+file_list.on('message', (message) => sendChildMessageToClients(message));
+
+// process: file walk loop 
+// const file_walk = fork('./src/process/incoming_filewalk.js');
+// file_walk.on('message', (message) => sendChildMessageToClients(message));
+
 const cosmos_socket = fork('./src/process/cosmos_socket.js');
 cosmos_socket.on('message', message => {
   try {
@@ -104,6 +112,7 @@ function updateAgentList(heartbeats) {
   const all_agents = [];
   //! agent_exec heartbeats
   const exec_agents = {};
+  var agent_file_host = {}; 
   try {
     Object.keys(heartbeats).forEach(a => {
       all_agents.push({
@@ -113,6 +122,9 @@ function updateAgentList(heartbeats) {
         });
         if(heartbeats[a].agent_proc === 'exec') {
           exec_agents[heartbeats[a].agent_node] = heartbeats[a];
+        }
+        if(heartbeats[a].agent_proc === 'file' && heartbeats[a].agent_node === process.env.HOST_NODE) {
+          agent_file_host = heartbeats[a];
         }
     });
   
@@ -126,21 +138,10 @@ function updateAgentList(heartbeats) {
     });
     //! heartbeat list to exec only 
     sendToChildProcess(event_queue, JSON.stringify({ exec_agents }));
+    sendToChildProcess(file_list, JSON.stringify({ agent_file_host }));
   }
   catch(e){ console.log(e); }
 }
-
-
-// process: file walk loop 
-// const file_walk = fork('./src/process/incoming_filewalk.js');
-// file_walk.on('message', (message) => sendChildMessageToClients(message));
-
-
-
-// // process: file list loop ( list of outgoing/incoming files for hostNode )
-// const file_list = fork('./src/process/file_list.js');
-// file_list.on('message', (message) => sendChildMessageToClients(message));
-
 
 /**
  * update current list of clients & nodes
