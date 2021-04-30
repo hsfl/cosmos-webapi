@@ -3,10 +3,11 @@ const COSMOS_PORT = 10020;
 
 const dayjs = require('dayjs');
 const dgram = require('dgram');
-const { getDiff, MJD2daysjs } = require('../utils/time');
+const { getDiff, MJD2daysjs, currentMJD } = require('../utils/time');
 const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
 const { SendToParentProcess } = require("./process");
 const CosmosAgent = require('../utils/agent');
+const { dbInsertByUTC } = require('../database');
 
 socket.bind(COSMOS_PORT);
 socket.on('error', (err) => {
@@ -105,14 +106,23 @@ setInterval(() => {
 //! get agent soh at 5 sec interval
 setInterval(() => {
     Object.keys(heartbeats).forEach(a => {
-        const nodeProcess = `${heartbeats[a].agent_node}:${heartbeats[a].agent_proc}`;
+        const node = heartbeats[a].agent_node;
+        const agent = heartbeats[a].agent_proc;
+        const nodeProcess = [node, agent].join(':');
         CosmosAgent.AgentReqByHeartbeat(heartbeats[a], 'soh', 1000, (resp) => {
-            if(resp.error) {
-                // console.log(`[REQERR]${nodeProcess}:${resp.error}`)
-            }
-            else {
-                // console.log(resp);
-                SendToParentProcess(resp, heartbeats[a].agent_node);
+            if(typeof resp === 'string') {
+                try {
+                    const soh = JSON.parse(resp);
+                    if(!soh.node_utc) soh.node_utc = currentMJD();
+                    if(!soh.agent_name) soh.agent_name = agent;
+                    if(!soh.node_name) soh.node_name = node;
+                    soh.node_type = nodeProcess;
+                    dbInsertByUTC([node,'soh'].join(':'), soh, () => {
+                        SendToParentProcess(soh, node);
+                    });
+                } catch (e) {
+                    console.log(e);
+                }
             }
             
         });
