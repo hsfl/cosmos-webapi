@@ -2,8 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
 const { dbFind, dbDeleteOne, dbInsert, dbNameByMJD } = require('../database.js');
-const { agent_req, execute }  = require('../utils/exec.js');
+const { execute }  = require('../utils/exec.js');
 const { currentMJD }  = require('../utils/time.js');
+const CosmosAgent = require('../utils/agent');
+
 
 //! following line is for parsing JSON data in POST requests
 router.use(bodyParser.json());
@@ -62,11 +64,20 @@ router.post('/', (req, res) => {
       --header "Content-Type: application/json" \
       http://localhost:3000/commands/agent
 */
-
 router.post('/agent', (req, res) => {
+  res.sendStatus(400);
+});
+
+router.post('/agent/:node/:proc', (req, res) => {
   var cmd = req.body.command;
-  agent_req(cmd, (result) => {
-    res.json(result);
+  const node = req.params.node;
+  const proc = req.params.proc;
+  CosmosAgent.AgentRequest(node, proc, cmd, 1000, (result) => {
+    if(typeof result == 'object') {
+      return res.json(result);
+    } else {
+      return res.json({ output: result });
+    }
   });
 });
 

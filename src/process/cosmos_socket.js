@@ -108,7 +108,7 @@ setInterval(() => {
         const nodeProcess = `${heartbeats[a].agent_node}:${heartbeats[a].agent_proc}`;
         CosmosAgent.AgentReqByHeartbeat(heartbeats[a], 'soh', 1000, (resp) => {
             if(resp.error) {
-                console.log(`[REQERR]${nodeProcess}:${resp.error}`)
+                // console.log(`[REQERR]${nodeProcess}:${resp.error}`)
             }
             else {
                 // console.log(resp);

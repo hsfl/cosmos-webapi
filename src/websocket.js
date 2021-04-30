@@ -20,7 +20,7 @@ const getUniqueID = () => {
 
 const sendClient = (clientID, json) => {
   if(clients[clientID]){
-   console.log(`TOCLIENT ${clientID}: ${json}`);
+  //  console.log(`TOCLIENT ${clientID}: ${json}`);
     clients[clientID].sendUTF(json);
   }
 }
@@ -85,13 +85,14 @@ event_queue.on('message', (message) => sendChildMessageToClients(message));
 
 const cosmos_socket = fork('./src/process/cosmos_socket.js');
 cosmos_socket.on('message', message => {
-  // console.log("[COSMOSLISTEN]")
   try {
     const msg = JSON.parse(message);
     if (msg.node === 'heartbeat') {
+      //! HEARTBEAT message
       global.heartbeats = msg.data; 
       updateAgentList(msg.data);
     } else {
+      //! SOH message
       sendChildMessageToClients(msg);
     }
   } catch (e) { console.log(e); }
@@ -99,27 +100,32 @@ cosmos_socket.on('message', message => {
 });
 
 function updateAgentList(heartbeats) {
-  const agents = [];
+  //! Array of agents 
+  const all_agents = [];
+  //! agent_exec heartbeats
+  const exec_agents = {};
   try {
     Object.keys(heartbeats).forEach(a => {
-      agents.push({
+      all_agents.push({
             agent: heartbeats[a].agent_proc,
             utc: heartbeats[a].agent_utc,
             node: heartbeats[a].agent_node
         });
+        if(heartbeats[a].agent_proc === 'exec') {
+          exec_agents[heartbeats[a].agent_node] = heartbeats[a];
+        }
     });
   
-    // filter agent list for clients 
+    //! filter agent list for clients 
     Object.entries(clientNodeList).forEach(([id, nodeList]) => {
       if(nodeList){
-        const agentList = agents.filter(e => nodeList.includes(e.node));
+        const agentList = all_agents.filter(e => nodeList.includes(e.node));
         const data = { node_type : 'list', agent_list: agentList };
         sendClient(id, JSON.stringify(data));
       }
     });
-    // filter list to exec only 
-    const execList = agents.filter(e =>  e.agent === 'exec');
-    sendToChildProcess(event_queue, JSON.stringify({ ExecNodes: execList }));
+    //! heartbeat list to exec only 
+    sendToChildProcess(event_queue, JSON.stringify({ exec_agents }));
   }
   catch(e){ console.log(e); }
 }

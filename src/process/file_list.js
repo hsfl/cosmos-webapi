@@ -1,4 +1,4 @@
-const { agent_req } = require("../utils/exec");
+const CosmosAgent = require('../utils/agent');
 const hostNode = process.env.HOST_NODE;
 const { SendToParentProcess } = require("./process");
 
@@ -15,38 +15,38 @@ function getFileList(type, json){
     return retList;
 }
 function getOutgoingFileList(callback){
-    agent_req(hostNode+ " file list_outgoing_json", (outgoing_resp) => { 
-        try {
-            const ofile_list = JSON.parse(outgoing_resp);
-            if(ofile_list.output){
-                var outgoingList = getFileList('outgoing', ofile_list.output);
-                callback(outgoingList);
-            }
-            else {
-                callback({});
-            }
-        }
-        catch(e){
-            callback({});
-        }
-    });
+    // agent_req(hostNode+ " file list_outgoing_json", (outgoing_resp) => { 
+    //     try {
+    //         const ofile_list = JSON.parse(outgoing_resp);
+    //         if(ofile_list.output){
+    //             var outgoingList = getFileList('outgoing', ofile_list.output);
+    //             callback(outgoingList);
+    //         }
+    //         else {
+    //             callback({});
+    //         }
+    //     }
+    //     catch(e){
+    //         callback({});
+    //     }
+    // });
 }
 function getIncomingFileList(callback){
-    agent_req(hostNode + " file list_incoming_json", (incoming_resp) => { 
-        try {
-            const ifile_list = JSON.parse(incoming_resp);
-            if(ifile_list.output){
-                var incomingList = getFileList('incoming', ifile_list.output);
-                callback(incomingList);
-            }
-            else {
-                callback({});
-            }
-        }
-        catch(e){
-            callback({});
-        }
-    });
+    // agent_req(hostNode + " file list_incoming_json", (incoming_resp) => { 
+    //     try {
+    //         const ifile_list = JSON.parse(incoming_resp);
+    //         if(ifile_list.output){
+    //             var incomingList = getFileList('incoming', ifile_list.output);
+    //             callback(incomingList);
+    //         }
+    //         else {
+    //             callback({});
+    //         }
+    //     }
+    //     catch(e){
+    //         callback({});
+    //     }
+    // });
 }
 function maintainFileList(){
     getOutgoingFileList((outgoingFiles) => {
@@ -57,7 +57,7 @@ function maintainFileList(){
                     outgoing: outgoingFiles,
                     incoming: incomingFiles
                 }
-                SendToParentProcess(message, "any");
+                SendToParentProcess(message, hostNode);
             }
         });
     });

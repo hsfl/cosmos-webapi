@@ -1,35 +1,33 @@
-const { agent_req } = require("../utils/exec");
 const { SendToParentProcess } = require("./process");
+const CosmosAgent = require('../utils/agent');
 
-const execNodes = [];
+var heartbeats = {};
 
 // receive list of exec agents from parent process
-process.on('message', (message) => {
+process.on('message', (json) => {
     try {
-        const json = JSON.parse(message);
-        json.ExecNodes.forEach((agent) => {
-            execNodes.push(agent.node);
-        });
+        const msg = JSON.parse(json);
+        heartbeats = msg.exec_agents;
     }
     catch(e) { console.error(e); }
 }); 
 function maintainEventQueue(node){
-    agent_req([node,"exec","getcommand"].join(" "), (resp) => {
+    CosmosAgent.AgentReqByHeartbeat(heartbeats[node], 'getcommand', 1000, (resp) => {
         try {
-            const event_list = JSON.parse(resp);
-            if(event_list.output){
+            if(typeof resp == 'string') {
                 const eventQueue = {
                     node_type: "event_queue",
-                    queue: event_list.output
+                    queue: resp
                 };
                 SendToParentProcess(eventQueue, node);
             }
+                
         }
-        catch(e){}
+        catch(e){ console.log(e); }
     });
 }
 function allEventQueue(){
-    execNodes.forEach(node => maintainEventQueue(node));
+    Object.keys(heartbeats).forEach(nodeName => maintainEventQueue(nodeName));
 }
 
 setInterval(allEventQueue, 5000);
