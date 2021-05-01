@@ -76,7 +76,12 @@ router.post('/agent/:node/:proc', (req, res) => {
     if(typeof result == 'object') {
       return res.json(result);
     } else {
-      return res.json({ output: result });
+      try {
+        const output = JSON.parse(result);
+        res.json({ output });
+      } catch {
+        return res.json({ output: result });
+      }
     }
   });
 });
