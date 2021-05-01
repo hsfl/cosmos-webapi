@@ -119,10 +119,7 @@ function dbFindQuery(startMJD, collectionName, query, options, callback) {
             callback(errorConnect, []); 
             return;
         }
-        if(startMJD === 'current') {
-            dbName = 'current';
-        }
-        else if(within30Days(startMJD)) {
+        if(within30Days(startMJD)) {
             dbName ='current';
         }
         else {
