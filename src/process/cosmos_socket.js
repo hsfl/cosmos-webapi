@@ -96,7 +96,7 @@ setInterval(() => {
     // if there is an agent exec running, then soh are already posted 
     if(agent_exec_count <= 0){
         socket.send(
-            CosmosAgent.AgentMessageBuf(CosmosAgent.AgentMessageType.REQUEST, "heartbeat"),
+            CosmosAgent.AgentChannelMessageBuf(CosmosAgent.AgentMessageType.REQUEST, "heartbeat"),
             COSMOS_PORT,
             COSMOS_ADDR
         );

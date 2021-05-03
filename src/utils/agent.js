@@ -7,6 +7,8 @@ const AgentMessageType = {
     RESPONSE: 11,
 };
 
+const jsonheader = "{\"agent_utc\":0,\"agent_node\":\"NODEWEBAPI\",\"agent_proc\":\"PROCWEBAPI\"";
+
 /**
  * 
  * @param {String} node 
@@ -67,9 +69,26 @@ function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
     return buf;
 }
 
+/**
+ * 
+ * @param {Number} type 
+ * @param {String} message 
+ * @returns {Buffer}
+ */
+function AgentChannelMessageBuf(type, message) {
+    const buf = Buffer.alloc(message.length + jsonheader.length +3 );
+    buf.writeUInt8(type, 0);
+    buf.writeUInt8(jsonheader.length%256, 1);
+    buf.writeUInt8(Math.trunc(jsonheader.length/256), 2, 'utf-8');
+    buf.write(jsonheader, 3, 'utf-8');
+    buf.write(message, jsonheader.length + 3, 'utf-8');
+    return buf;
+}
+
 module.exports = {
     AgentRequest,
     AgentMessageBuf,
+    AgentChannelMessageBuf,
     AgentMessageType,
-    AgentReqByHeartbeat
+    AgentReqByHeartbeat,
 };
