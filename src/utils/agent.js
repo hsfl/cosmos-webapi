@@ -79,7 +79,7 @@ function AgentChannelMessageBuf(type, message) {
     const buf = Buffer.alloc(message.length + jsonheader.length +3 );
     buf.writeUInt8(type, 0);
     buf.writeUInt8(jsonheader.length%256, 1);
-    buf.writeUInt8(Math.trunc(jsonheader.length/256), 2, 'utf-8');
+    buf.writeUInt8(Math.trunc(jsonheader.length/256), 2);
     buf.write(jsonheader, 3, 'utf-8');
     buf.write(message, jsonheader.length + 3, 'utf-8');
     return buf;
