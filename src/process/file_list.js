@@ -26,7 +26,7 @@ function getFileList(type, json){
 
 function getOutgoingFileList(callback){
     if(heartbeat.agent_addr && heartbeat.agent_port) {
-        CosmosAgent.AgentReqByHeartbeat(heartbeat, list_outgoing_json, (outgoing_resp) => { 
+        CosmosAgent.AgentReqByHeartbeat(heartbeat, "list_outgoing_json", 2000, (outgoing_resp) => { 
             try {
                 if(typeof outgoing_resp === 'string' && outgoing_resp.length > 0) {
                     const ofile_list = JSON.parse(outgoing_resp);
@@ -43,7 +43,7 @@ function getOutgoingFileList(callback){
 }
 function getIncomingFileList(callback){
     if(heartbeat.agent_addr && heartbeat.agent_port) {
-        CosmosAgent.AgentReqByHeartbeat(heartbeat, list_outgoing_json, (incoming_resp) => { 
+        CosmosAgent.AgentReqByHeartbeat(heartbeat, "list_incoming_json", 2000, (incoming_resp) => { 
 
             try {
                 if(typeof incoming_resp === 'string' && incoming_resp.length > 0) {
