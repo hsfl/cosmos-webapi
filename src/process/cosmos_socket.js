@@ -37,12 +37,13 @@ socket.on('message', (msg, rinfo) => {
         try {
             const beat = JSON.parse(beatstr);
             addAgentToList(beat);
+            const node = beat.agent_node; 
 
             if(msg[0] == CosmosAgent.AgentMessageType.SOH ){
                 if(msg.indexOf('}') < msg.lastIndexOf('}')) {
                     const sohstr = msg.subarray(msg.indexOf('}') +1, msg.lastIndexOf('}')+1).toString();
                     const soh = JSON.parse(sohstr);
-                    SendToParentProcess(soh, beat.agent_node);
+                    SendToParentProcess(soh, node);
                 }
             } 
 
@@ -109,22 +110,27 @@ setInterval(() => {
         const node = heartbeats[a].agent_node;
         const agent = heartbeats[a].agent_proc;
         const nodeProcess = [node, agent].join(':');
-        CosmosAgent.AgentReqByHeartbeat(heartbeats[a], 'soh', 1000, (resp) => {
+        CosmosAgent.AgentReqByHeartbeat(heartbeats[a], 'soh', 3000, (resp) => {
             if(typeof resp === 'string') {
+                const json_begin = resp.indexOf('{');
+                const json_end = resp.lastIndexOf('}');
                 try {
-                    const soh = JSON.parse(resp);
-                    if(!soh.node_utc) soh.node_utc = currentMJD();
-                    if(!soh.agent_name) soh.agent_name = agent;
-                    if(!soh.node_name) soh.node_name = node;
-                    soh.node_type = nodeProcess;
-                    dbInsertByUTC([node,'soh'].join(':'), soh, () => {
-                        SendToParentProcess(soh, node);
-                    });
+                    if(json_begin < json_end) {
+                        const json = resp.substr(json_begin, json_end+1);
+                        const soh = JSON.parse(json);
+                        if(!soh.node_utc) soh.node_utc = currentMJD();
+                        if(!soh.agent_name) soh.agent_name = agent;
+                        if(!soh.node_name) soh.node_name = node;
+                        soh.node_type = nodeProcess;
+                        dbInsertByUTC([node,'soh'].join(':'), soh, () => {
+                            SendToParentProcess(soh, node);
+                        });
+                    }
                 } catch (e) {
+                    console.log(resp);
                     console.log(e);
                 }
             }
-            
         });
     });
 }, 5000);
