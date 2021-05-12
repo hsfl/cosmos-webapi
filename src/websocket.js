@@ -12,12 +12,20 @@ const clients = {}; // { userID : connection, ...}
 const nodes = {}; // { nodename : [userID,...] ,... }
 const clientNodeList = {}; // { userID : [nodename,...] , ...}
 
-// This code generates unique userid for everyuser.
+/**
+ * generates unique userid for every client
+ * @returns String unique ID for client
+ */
 const getUniqueID = () => {
   const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   return s4() + s4() + '-' + s4();
 };
 
+/**
+ * Send data to a client
+ * @param {String} clientID 
+ * @param {String} json 
+ */
 const sendClient = (clientID, json) => {
   if(clients[clientID]){
   //  console.log(`TOCLIENT ${clientID}: ${json}`);
@@ -25,8 +33,8 @@ const sendClient = (clientID, json) => {
   }
 }
 /**
- * sending json to all connected clients
- * @param {string} json 
+ * sending data to all connected clients
+ * @param {String} json 
  */
 const sendAllClients = (json) => {
   Object.keys(clients).forEach((id) => {
@@ -91,6 +99,13 @@ file_list.on('message', (message) => sendChildMessageToClients(message));
 // const file_walk = fork('./src/process/incoming_filewalk.js');
 // file_walk.on('message', (message) => sendChildMessageToClients(message));
 
+/**
+ * COSMOS listen loop
+ * 1. receive list of agent heartbeats
+ * 2. Maintains list of active agents 
+ * 3. listens for SOH messages 
+ * 4. Forwards SOH data to clients 
+ */
 const cosmos_socket = fork('./src/process/cosmos_socket.js');
 cosmos_socket.on('message', message => {
   try {
@@ -108,11 +123,15 @@ cosmos_socket.on('message', message => {
 });
 
 function updateAgentList(heartbeats) {
-  //! Array of agents 
+  //! Array of agents as { agent: , utc: , node: }
   const all_agents = [];
+
   //! agent_exec heartbeats
   const exec_agents = {};
+
+  //! heartbeat of agent_file running on HOST
   var agent_file_host = {}; 
+
   try {
     Object.keys(heartbeats).forEach(a => {
       all_agents.push({
@@ -128,16 +147,18 @@ function updateAgentList(heartbeats) {
         }
     });
   
-    //! filter agent list for clients 
+    //! Filter agent list for each client by node 
+    //! Send list of agents to each client
     Object.entries(clientNodeList).forEach(([id, nodeList]) => {
-      if(nodeList){
+      if (nodeList) {
         const agentList = all_agents.filter(e => nodeList.includes(e.node));
         const data = { node_type : 'list', agent_list: agentList };
         sendClient(id, JSON.stringify(data));
       }
     });
-    //! heartbeat list to exec only 
+    //! Send agent_exec heartbeats to event_queue process
     sendToChildProcess(event_queue, JSON.stringify({ exec_agents }));
+    //! Send agent_file heartbeat to file_list process
     sendToChildProcess(file_list, JSON.stringify({ agent_file_host }));
   }
   catch(e){ console.log(e); }

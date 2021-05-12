@@ -31,6 +31,13 @@ function AgentRequest(node, proc, request, waitms, callback) {
     }
 }
 
+/**
+ * 
+ * @param {Object} heartbeat 
+ * @param {String} request 
+ * @param {Number} waitms 
+ * @param {function(resp)} callback 
+ */
 function AgentReqByHeartbeat(heartbeat, request, waitms, callback) {
     if(heartbeat.agent_port && heartbeat.agent_addr){
         AgentReqByAddr(request, heartbeat.agent_port, heartbeat.agent_addr, waitms, callback);
@@ -39,6 +46,14 @@ function AgentReqByHeartbeat(heartbeat, request, waitms, callback) {
     }
 }
 
+/**
+ * Send Request to an Agent
+ * @param {String} request 
+ * @param {Number} agent_port 
+ * @param {String} agent_addr 
+ * @param {Number} waitms 
+ * @param {function (resp)} callback 
+ */
 function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
     if(agent_port > 0) {
         const req = AgentMessageBuf(AgentMessageType.REQUEST, request);
