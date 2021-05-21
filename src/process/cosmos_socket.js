@@ -106,11 +106,11 @@ setInterval(() => {
 
 //! get agent soh at 5 sec interval
 setInterval(() => {
-    Object.keys(heartbeats).forEach(a => {
+    Promise.all(Object.keys(heartbeats).map(async (a) => {
         const node = heartbeats[a].agent_node;
         const agent = heartbeats[a].agent_proc;
         const nodeProcess = [node, agent].join(':');
-        CosmosAgent.AgentReqByHeartbeat(heartbeats[a], 'soh', 3000, (resp) => {
+        return CosmosAgent.AgentReqByHeartbeat(heartbeats[a], 'soh', 3000, async (resp) => {
             if(typeof resp === 'string') {
                 const json_begin = resp.indexOf('{');
                 const json_end = resp.lastIndexOf('}');
@@ -122,9 +122,10 @@ setInterval(() => {
                         if(!soh.agent_name) soh.agent_name = agent;
                         if(!soh.node_name) soh.node_name = node;
                         soh.node_type = nodeProcess;
-                        dbInsertByUTC([node,'soh'].join(':'), soh, () => {
-                            SendToParentProcess(soh, node);
-                        });
+                        dbInsertByUTC([node,'soh'].join(':'), soh, ()=>{SendToParentProcess(soh, node);});
+                        //SendToParentProcess(soh, node);
+						return [soh, node];
+                        //});
                     }
                 } catch (e) {
                     console.log(resp);
@@ -132,5 +133,7 @@ setInterval(() => {
                 }
             }
         });
-    });
+    })).then(values => {
+	  //SendToParentProcess(values, 'any');
+	});
 }, 5000);

@@ -38,9 +38,9 @@ function AgentRequest(node, proc, request, waitms, callback) {
  * @param {Number} waitms 
  * @param {function(resp)} callback 
  */
-function AgentReqByHeartbeat(heartbeat, request, waitms, callback) {
+async function AgentReqByHeartbeat(heartbeat, request, waitms, callback) {
     if(heartbeat.agent_port && heartbeat.agent_addr){
-        AgentReqByAddr(request, heartbeat.agent_port, heartbeat.agent_addr, waitms, callback);
+        return AgentReqByAddr(request, heartbeat.agent_port, heartbeat.agent_addr, waitms, callback);
     } else {
         callback({ error: 'agent not available'});
     }
@@ -54,7 +54,7 @@ function AgentReqByHeartbeat(heartbeat, request, waitms, callback) {
  * @param {Number} waitms 
  * @param {function (resp)} callback 
  */
-function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
+async function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
     if(agent_port > 0) {
         const req = AgentMessageBuf(AgentMessageType.REQUEST, request);
         const agent_socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
@@ -63,10 +63,9 @@ function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
         agent_socket.on('message', (msg, rinfo) => {
             resp += msg.toString(); 
         });
-        const socketTimeout = setTimeout(() => {
-            agent_socket.close();
-            callback(resp);
-        }, waitms);
+		await new Promise(resolve => setTimeout(resolve, waitms));
+        agent_socket.close();
+        return callback(resp);
     } else {
         callback({ error: 'agent not available'});
     }

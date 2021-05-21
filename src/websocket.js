@@ -60,7 +60,7 @@ const sendToClients = (json, nodename) => {
  */
 const sendChildMessageToClients = (msg) => {
   try{
-    // const json = JSON.parse(msg); 
+    // const json = JSON.parse(msg);
     if(msg.data && msg.node){
       if(msg.node === 'any') {
         sendAllClients(JSON.stringify(msg.data));
