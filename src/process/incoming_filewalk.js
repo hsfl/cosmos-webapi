@@ -58,14 +58,14 @@ function ingestTelemetryFile(filePath, nodeName) {
             
             if(json.node_utc) {
                 // findOne in db REALM, collection "any" where node_utc == json.node_utc
-                const qFields = {node_utc: json.node_utc};
-                let dbRes = dbFind(process.env.REALM, "any", qFields, {}, (res) => {
-                    console.log(res);
-                });
+                // const qFields = {node_utc: json.node_utc};
+                // let dbRes = dbFind("current", node_type, qFields, {}, (res) => {
+                //     console.log(res);
+                // });
                 
                 json.node_type = node_type;
                 if(!dbRes){
-                    dbInsert(process.env.REALM, "any", json);
+                    dbInsert("current", node_type, json);
                 }
             }
         }
@@ -111,14 +111,14 @@ function ingestEventFile(filePath, nodeName) {
                 }, () => {
                     moveIncomingFile(eventOutFile, 'archive');
                     if(outContent) {
-                        const node_type = nodeName + ":executed";
+                        const node_type = nodeName + ":event";
                         eventJson['output'] = outContent;
                         eventJson['node_type'] = node_type;
                         const query = {
                             event_utc: eventJson.event_utc,
                             event_name: eventJson.event_name
                         };
-                        dbFindAndReplace(process.env.REALM, "any", query, true, eventJson, (res) => {
+                        dbFindAndReplace("current", node_type, query, true, eventJson, (res) => {
                             console.log(res);
                         });
                         SendToParentProcess(eventJson, nodeName);
@@ -126,13 +126,13 @@ function ingestEventFile(filePath, nodeName) {
                 });
             } 
             else {
-                const node_type = nodeName + ":executed";
+                const node_type = nodeName + ":event";
                 eventJson['node_type'] = node_type;
                 const query = {
                     event_utc: eventJson.event_utc,
                     event_name: eventJson.event_name
                 };
-                dbFindAndReplace(process.env.REALM, "any", query, true, eventJson, (res) => {
+                dbFindAndReplace("current", node_type, query, true, eventJson, (res) => {
                     console.log(res);
                 });
 

@@ -77,6 +77,7 @@ describe("POST /commands/agent {command: 'list'}", function() {
       .post('/commands/agent')
       .send(data)
       .expect(200)
+      .expect('Content-Type',/json/)
       .end(done);
   });
 
@@ -86,6 +87,7 @@ describe("POST /commands/agent {command: 'list'}", function() {
     .post('/commands/agent')
     .send(data)
     .expect(200)
+    .expect('Content-Type',/json/)
     .end(function(err, res){
       if (err) done(err);
       else {
@@ -93,8 +95,38 @@ describe("POST /commands/agent {command: 'list'}", function() {
         done();
       }
     });
+  });
 });
+
+describe("POST /commands/agent {command: 'list_json'}", function() {
+  this.timeout(10000);
+  it("it should have status code 200", function(done) {
+    const data = {command: 'list_json'};
+      supertest(app)
+      .post('/commands/agent')
+      .send(data)
+      .expect(200)
+      .expect('Content-Type',/json/)
+      .end(done);
+  });
+
+  it("it should have response", function(done) {
+    const data = {command: 'list_json'};
+    supertest(app)
+    .post('/commands/agent')
+    .send(data)
+    .expect(200)
+    .expect('Content-Type', /json/)
+    .end(function(err, res){
+      if (err) done(err);
+      else {
+        assert.ok(res.body);
+        done();
+      }
+    });
+  });
 });
+
 
 describe("POST /commands/agent {command: 'nodename agentname'}", function() {
   this.timeout(10000);
@@ -103,6 +135,7 @@ describe("POST /commands/agent {command: 'nodename agentname'}", function() {
       supertest(app)
       .post('/commands/agent')
       .send(data)
+      .expect('Content-Type', /json/)
       .expect(200)
       .end(done);
   });
@@ -113,6 +146,7 @@ describe("POST /commands/agent {command: 'nodename agentname'}", function() {
     .post('/commands/agent')
     .send(data)
     .expect(200)
+    .expect('Content-Type', /json/)
     .end(function(err, res){
       if (err) done(err);
       else {
@@ -157,9 +191,9 @@ describe("GET /commands/:node ", function() {
   });
 
 });
-describe("DELETE /commands/:node {event_name:'new_event'}", function() {
+describe("DELETE /commands/:node {event_name:'new_event', event_utc: 0}", function() {
   it("it should have status code 200", function(done) {
-    const data = {event_name:'new_event'};
+    const data = {event_name:'new_event', event_utc: 0};
       supertest(app)
       .delete('/commands/testNode')
       .send(data)
@@ -178,6 +212,17 @@ describe("DELETE /commands/:node ", function() {
   it("it should have status code 400", function(done) {
       supertest(app)
       .delete('/commands/testNode')
+      .expect(400)
+      .end(done);
+  });
+});
+
+describe("DELETE /commands/:node {event_name:'new_event'}", function() {
+  it("it should have status code 400", function(done) {
+    const data = {event_name:'new_event'};
+      supertest(app)
+      .delete('/commands/testNode')
+      .send(data)
       .expect(400)
       .end(done);
   });

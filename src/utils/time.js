@@ -53,6 +53,11 @@ function MJDtoJavaScriptDate(mjd) {
     .toDate();
 }
 
+function MJD2daysjs(mjd){
+    return dayjs
+        .unix((((mjd + 2400000.5) - 2440587.5) * 86400.0));
+}
+
 /**
  * Calculate the difference between the current time and the date provided, returning
  * the difference as a dayjs object. If the difference is over a day, then a string is returned.
@@ -88,20 +93,28 @@ function getDiff(date, countdown = false) {
  * @param {number} mjd 
  */
 function within30Days(mjd) {
-    let futureTime = dayjs();
-    let pastTime = dayjs.unix((((mjd + 2400000.5) - 2440587.5) * 86400.0));
-    if (typeof date !== 'string' && futureTime.diff(pastTime, 'day') < 30) {
-        return true; 
-    }
-    return false; 
+  let futureTime = dayjs();
+  let pastTime = dayjs.unix((((mjd + 2400000.5) - 2440587.5) * 86400.0));
+  if (typeof date !== 'string' && futureTime.diff(pastTime, 'day') < 30) {
+      return true; 
+  }
+  return false; 
 }
 
+/**
+ * 
+ * @returns {Number} current MJD
+ */
 function currentMJD() {
-    return dateToMJD(dayjs);
+  return dateToMJD(dayjs());
 }
 
 module.exports = {
     dateToMJD,
     within30Days,
     currentMJD,
+    MJDtoJavaScriptDate,
+    MJD2daysjs,
+    mjdToString,
+    getDiff
 };

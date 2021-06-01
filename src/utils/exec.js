@@ -1,5 +1,6 @@
 const COSMOS_BIN = process.env.COSMOS_DIR + 'bin/';
 
+
 function execute(cmd, args, callback){
     var spawn = require('child_process').spawn;
     try{
@@ -23,12 +24,8 @@ function execute(cmd, args, callback){
 function exec_bash(cmd, callback){
     execute("/bin/bash", ['-c', cmd], callback);
 }
-function agent_req(cmd, callback){
-    exec_bash(COSMOS_BIN + 'agent ' + cmd, callback)
-}
 
 module.exports = {
     execute, 
     exec_bash,
-    agent_req
 };

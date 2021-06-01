@@ -1,9 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
-const { dbFind, dbDeleteOne, dbInsert } = require('../database.js');
-const { agent_req, execute }  = require('../utils/exec.js');
-const emptyResponse = {"error":"Empty Response."};
+const { dbFind, dbDeleteOne, dbInsert, dbNameByMJD } = require('../database.js');
+const { execute }  = require('../utils/exec.js');
+const { currentMJD }  = require('../utils/time.js');
+const CosmosAgent = require('../utils/agent');
+
 
 //! following line is for parsing JSON data in POST requests
 router.use(bodyParser.json());
@@ -62,16 +64,30 @@ router.post('/', (req, res) => {
       --header "Content-Type: application/json" \
       http://localhost:3000/commands/agent
 */
-
 router.post('/agent', (req, res) => {
+  res.sendStatus(400);
+});
+
+router.post('/agent/:node/:proc', (req, res) => {
   var cmd = req.body.command;
-  agent_req(cmd, (result) => {
-    res.send(result);
+  const node = req.params.node;
+  const proc = req.params.proc;
+  CosmosAgent.AgentRequest(node, proc, cmd, 1000, (result) => {
+    if(typeof result == 'object') {
+      return res.json(result);
+    } else {
+      try {
+        const output = JSON.parse(result);
+        res.json({ output });
+      } catch {
+        return res.json({ output: result });
+      }
+    }
   });
 });
 
 /**  route POST /commands/:commandNode
- * INSERT to database REALM, collection commandNode:commands
+ * INSERT to database REALM, collection commandNode:event
   test with :
     curl --data '{"command":{"event_name":"new_event"}}' \
       --request POST \
@@ -80,8 +96,11 @@ router.post('/agent', (req, res) => {
 */
 router.post('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
-  const entry = req.body['command'];
-  dbInsert(process.env.REALM, `${node}:commands`, entry, (stat) => {
+  const entry = req.body.command;
+  if(!entry.event_utc || entry.event_utc == 0.){
+    entry.event_utc = currentMJD(); 
+  }
+  dbInsert('current', `${node}:event`, entry, (stat) => {
     if(stat.error) res.json({"error":"Error inserting into database."});
     else res.json({"message":"Successfully inserted command"});
   });
@@ -89,7 +108,7 @@ router.post('/:commandNode/', (req, res) => {
 });
 
 /**  route GET /commands/:commandNode
- * FINDALL in database REALM, collection commandNode:commands
+ * FINDALL in database REALM, collection commandNode:event
 test this with :
   curl --request GET \
     --header "Content-Type: application/json" \
@@ -97,7 +116,7 @@ test this with :
 */
 router.get('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
-  dbFind(process.env.REALM, `${node}:commands`, {},{}, (stat, result) => {
+  dbFind('current', `${node}:event`, {},{}, (stat, result) => {
     if(stat.error) res.json({"error":"Error finding."});
     else {
       res.json(result);
@@ -106,23 +125,26 @@ router.get('/:commandNode/', (req, res) => {
 });
 
 /**  route DELETE /commands/:commandNode
- * DELETE from database REALM, collection commandNode:commands
- * example request: { "event_name":"event_to_delete"}
+ * DELETE from database 'current' or 'YYYY-MM', collection commandNode:event
+ * example request: {"event_name":"new_event2", "event_utc": }
  test this with :
-  curl --data '{"event_name":"new_event2"}' \
+  curl --data '{"event_name":"new_event2", "event_utc": }' \
     --request DELETE \
     --header "Content-Type: application/json" \
     http://localhost:3000/commands/testNode
 */
 router.delete('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
-  const eventToDelete = req.body['event_name'];
-  if(!eventToDelete || eventToDelete === undefined){
+  const event_name = req.body.event_name;
+  const event_utc = req.body.event_utc;
+  console.log(req.body);
+  if(!event_name || event_name === undefined || event_utc === undefined){
     res.sendStatus(400);
     return;
   }
   else {
-    dbDeleteOne(process.env.REALM, `${node}:commands`, {"event_name":`${eventToDelete}`}, (err) => {
+    const db = dbNameByMJD(event_utc);
+    dbDeleteOne(db, `${node}:event`, {event_name, event_utc}, (err) => {
       if(err) res.json({"error":"Error deleting."});                 
       else res.json({"message":"Successfully deleted command"});
     });
