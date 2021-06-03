@@ -16,6 +16,8 @@ cd cosmos-webapi
 # Install dependencies
 npm i
 ```
+# Modifying the default environment variables 
+`cp .env.example .env`
 
 ## Running
 
