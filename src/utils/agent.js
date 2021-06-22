@@ -28,6 +28,7 @@ function AgentRequest(node, proc, request, waitms, callback) {
         }
     } catch (e) {
         console.log(e); 
+        callback({ error: e});
     }
 }
 

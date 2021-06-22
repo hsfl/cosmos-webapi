@@ -16,6 +16,9 @@ router.use((req, res, next) => {
   next();
 });
 
+/**
+ * query SOH data by node and a start time (MJD)
+ */
 router.post('/soh/:nodeName/', (req, res) => {
     const start = req.body.beginDate;
     // start should be either a MJD time
@@ -34,6 +37,9 @@ router.post('/soh/:nodeName/', (req, res) => {
 
 });
 
+/**
+ * query most recent soh data for a node
+ */
 router.post('/soh/current/:nodeName/', (req, res) => {
     const start = currentMJD();
 
@@ -46,5 +52,6 @@ router.post('/soh/current/:nodeName/', (req, res) => {
     });
 
 });
+
 
 module.exports = router;

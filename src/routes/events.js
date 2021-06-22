@@ -30,7 +30,7 @@ curl --header "Content-Type: application/json" \
     "send an event to the node"
     1. creates .event file, puts it in node/outgoing/exec
         - relies on agent_file running on this machine to transfer the files to the node
-    2. insert in database node/events
+    2. insert event in database node:events
 */
 router.post('/:commandNode/', (req, res) => {
     const nodeName = req.params.commandNode;
@@ -47,7 +47,7 @@ router.post('/:commandNode/', (req, res) => {
             return; 
         }
         const dbName = 'current';
-        const collectionName = `${nodeName}:executed`;
+        const collectionName = `${nodeName}:events`;
         const doc = event;
         dbInsert(dbName, collectionName, doc, (resp) => {
             if(resp.error) res.sendStatus(500);
