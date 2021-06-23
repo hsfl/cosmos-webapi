@@ -21,9 +21,9 @@ router.use((req, res, next) => {
 
 
 /**  route POST /commands/:commandNode
- * INSERT to database REALM, collection commandNode:event
+ * INSERT to database REALM, collection commandNode:command
   test with :
-    curl --data '{"command":{"event_name":"new_event"}}' \
+    curl --data '{"command": {"event_name" : "test", "event_type": 0, "event_flag":0, "event_data":"a test command"}}' \
       --request POST \
       --header "Content-Type: application/json" \
       http://localhost:3000/commands/testNode
@@ -31,10 +31,8 @@ router.use((req, res, next) => {
 router.post('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
   const entry = req.body.command;
-  if(!entry.event_utc || entry.event_utc == 0.){
-    entry.event_utc = currentMJD(); 
-  }
-  dbInsert('current', `${node}:event`, entry, (stat) => {
+
+  dbInsert('current', `${node}:command`, entry, (stat) => {
     if(stat.error) res.json({"error":"Error inserting into database."});
     else res.json({"message":"Successfully inserted command"});
   });
@@ -42,7 +40,7 @@ router.post('/:commandNode/', (req, res) => {
 });
 
 /**  route GET /commands/:commandNode
- * FINDALL in database REALM, collection commandNode:event
+ * FINDALL in database REALM, collection commandNode:command
 test this with :
   curl --request GET \
     --header "Content-Type: application/json" \
@@ -50,7 +48,7 @@ test this with :
 */
 router.get('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
-  dbFind('current', `${node}:event`, {},{}, (stat, result) => {
+  dbFind('current', `${node}:command`, {},{}, (stat, result) => {
     if(stat.error) res.json({"error":"Error finding."});
     else {
       res.json(result);
@@ -59,10 +57,10 @@ router.get('/:commandNode/', (req, res) => {
 });
 
 /**  route DELETE /commands/:commandNode
- * DELETE from database 'current' or 'YYYY-MM', collection commandNode:event
- * example request: {"event_name":"new_event2", "event_utc": }
+ * DELETE from database 'current' , collection commandNode:command
+ * example request: {"event_name":"new_event2"}
  test this with :
-  curl --data '{"event_name":"new_event2", "event_utc": }' \
+  curl --data '{"event_name":"new_event2"}' \
     --request DELETE \
     --header "Content-Type: application/json" \
     http://localhost:3000/commands/testNode
@@ -70,15 +68,13 @@ router.get('/:commandNode/', (req, res) => {
 router.delete('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
   const event_name = req.body.event_name;
-  const event_utc = req.body.event_utc;
   console.log(req.body);
-  if(!event_name || event_name === undefined || event_utc === undefined){
+  if(!event_name || event_name === undefined){
     res.sendStatus(400);
     return;
   }
   else {
-    const db = dbNameByMJD(event_utc);
-    dbDeleteOne(db, `${node}:event`, {event_name, event_utc}, (err) => {
+    dbDeleteOne('current', `${node}:command`, { event_name }, (err) => {
       if(err) res.json({"error":"Error deleting."});                 
       else res.json({"message":"Successfully deleted command"});
     });

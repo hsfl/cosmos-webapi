@@ -96,8 +96,8 @@ const file_list = fork('./src/process/file_list.js');
 file_list.on('message', (message) => sendChildMessageToClients(message));
 
 // process: file walk loop 
-// const file_walk = fork('./src/process/incoming_filewalk.js');
-// file_walk.on('message', (message) => sendChildMessageToClients(message));
+const file_walk = fork('./src/process/incoming_filewalk.js');
+file_walk.on('message', (message) => sendChildMessageToClients(message));
 
 /**
  * COSMOS listen loop

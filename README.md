@@ -27,3 +27,13 @@ npm run dev
 ```bash
 mocha
 ```
+
+
+----------------------
+### Database Organization
+database Name
+- current or YYYY-MM
+collection Names
+- nodename:soh
+- nodename:event
+- nodename:command

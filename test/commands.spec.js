@@ -36,9 +36,9 @@ describe("GET /commands/:node ", function() {
   });
 
 });
-describe("DELETE /commands/:node {event_name:'new_event', event_utc: 0}", function() {
+describe("DELETE /commands/:node {event_name:'new_event'}", function() {
   it("it should have status code 200", function(done) {
-    const data = {event_name:'new_event', event_utc: 0};
+    const data = {event_name:'new_event'};
       supertest(app)
       .delete('/commands/testNode')
       .send(data)
@@ -63,12 +63,12 @@ describe("DELETE /commands/:node ", function() {
 });
 
 describe("DELETE /commands/:node {event_name:'new_event'}", function() {
-  it("it should have status code 400", function(done) {
+  it("it should have status code 200", function(done) {
     const data = {event_name:'new_event'};
       supertest(app)
       .delete('/commands/testNode')
       .send(data)
-      .expect(400)
+      .expect(200)
       .end(done);
   });
 });
