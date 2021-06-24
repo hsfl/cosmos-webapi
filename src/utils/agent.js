@@ -79,7 +79,7 @@ function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
  * @returns {Buffer}
  */
  function AgentMessageBuf(type, message) {
-    const buf = Buffer.alloc(message.length +3 );
+    const buf = Buffer.alloc(message.length);
     buf.write(message, 0, 'utf-8');
     return buf;
 }
