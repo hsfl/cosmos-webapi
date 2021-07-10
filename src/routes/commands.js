@@ -5,6 +5,7 @@ const { dbFind, dbDeleteOne, dbInsert, dbNameByMJD } = require('../database.js')
 const { execute }  = require('../utils/exec.js');
 const { currentMJD }  = require('../utils/time.js');
 const CosmosAgent = require('../utils/agent');
+const { createEventFile } = require('../utils/file.js');
 
 
 //! following line is for parsing JSON data in POST requests
@@ -105,6 +106,25 @@ router.post('/:commandNode/', (req, res) => {
     else res.json({"message":"Successfully inserted command"});
   });
 
+});
+
+/**  route POST /commands/:type/:targetNode
+ * execute command on targetNode
+*/
+router.post('/:type/:targetNode/', (req, res) => {
+  const type = req.params.type;
+  const node = req.params.targetNode;
+  const event = req.body.event;
+  if(!event.event_utc || event.event_utc == 0.){
+    event.utc = currentMJD(); 
+  }
+  createEventFile(node, event, (data) => {
+    res.json(data);
+  });
+  /*dbInsert('current', `${node}:event`, events, (stat) => {
+    if(stat.error) res.json({"error":"Error inserting into database."});
+    else res.json({"message":"Successfully inserted command"});
+  });*/
 });
 
 /**  route GET /commands/:commandNode

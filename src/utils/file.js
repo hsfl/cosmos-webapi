@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const nodes_folder = path.join(process.env.COSMOS_DIR,'nodes'); 
+const { currentMJD }  = require('../utils/time.js');
 
 function getDirectories(srcpath)
 {
@@ -156,6 +157,32 @@ function gzLineByLine(file, onLine, onError, callback ) {
     
 }
 
+/** Create event file from command editor/command components to send
+ *  Event file should be a single line eventstruc json object
+*/
+const createEventFile = (node, event, callBack) => {
+    // Create file in outgoing/exec of specified node
+    const outgoingDir = path.join(getNodeDir(node),'outgoing','exec');
+    // Create directory if it doesn't exist
+    fs.mkdir(outgoingDir, { recursive: true }, (err) => {
+        if (err && err.code === 'EEXIST') {
+            callBack(err);
+            return;
+        }
+        const data = JSON.stringify(event);
+        const time = new Date();
+        const filename = 'event' + time.getTime() + '.command';
+        fs.writeFile(path.join(outgoingDir, filename), data, (err) => {
+            if (err) {
+                callBack(err);
+                return;
+            }
+            // file written successfully
+            callBack( { status: 'success' });
+        });
+    });
+};
+
 
 
 module.exports = {
@@ -164,5 +191,6 @@ module.exports = {
     listAllPieces,
     listAllNamespace,
     getNodeDir,
-    gzLineByLine
+    gzLineByLine,
+    createEventFile,
 };
