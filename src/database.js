@@ -98,9 +98,9 @@ function dbDeleteOne(dbName, collectionName, doc, callback){
         var dbo = db.db(dbName);
         const collection = dbo.collection(collectionName);
     
-        collection.deleteOne(doc, (err) => {
-          callback(err);
-          db.close(); 
+        collection.deleteOne(doc, (err, result) => {
+          db.close();
+          callback(err, result);
         });
     });
 }

@@ -108,19 +108,29 @@ router.post('/:commandNode/', (req, res) => {
 
 });
 
-/**  route POST /commands/:type/:targetNode
+/**  route POST /commands/:type/:node
  * execute command on targetNode
 */
-router.post('/:type/:targetNode/', (req, res) => {
+router.post('/:type/:node/:proc', (req, res) => {
   const type = req.params.type;
-  const node = req.params.targetNode;
+  const node = req.params.node;
+  const agent = req.params.proc;
   const event = req.body.event;
   if(!event.event_utc || event.event_utc == 0.){
     event.utc = currentMJD(); 
   }
-  createEventFile(node, event, (data) => {
-    res.json(data);
-  });
+  if (type === 'exec') {
+    const cmd = `addcommand ${JSON.stringify(event)}`;
+    CosmosAgent.AgentRequest(node, agent, cmd, 1000, (result) => {
+      res.json({ 'status': result });
+    });
+  } else if (type === 'file') {
+    createEventFile(node, event, (data) => {
+      res.json(data);
+    });
+  } else {
+    res.json( {'error': 'Type error' });
+  }
   /*dbInsert('current', `${node}:event`, events, (stat) => {
     if(stat.error) res.json({"error":"Error inserting into database."});
     else res.json({"message":"Successfully inserted command"});
@@ -156,17 +166,21 @@ router.get('/:commandNode/', (req, res) => {
 router.delete('/:commandNode/', (req, res) => {
   const node = req.params.commandNode;
   const event_name = req.body.event_name;
-  const event_utc = req.body.event_utc;
-  console.log(req.body);
+  const event_utc = (!req.body.event_utc || req.body.event_utc == 0) ? currentMJD() : req.body.event_utc;
   if(!event_name || event_name === undefined || event_utc === undefined){
     res.sendStatus(400);
     return;
   }
   else {
     const db = dbNameByMJD(event_utc);
-    dbDeleteOne(db, `${node}:event`, {event_name, event_utc}, (err) => {
-      if(err) res.json({"error":"Error deleting."});                 
-      else res.json({"message":"Successfully deleted command"});
+    dbDeleteOne(db, `${node}:event`, { 'event_name': event_name }, (err, result) => {
+      if (err) {
+        res.json({"error":"Error deleting."});
+      } else if (result.deletedCount === 1) {
+        res.json({"status":"Success"});
+      } else {
+        res.json({"status":`No records matching "${event_name}"`});
+      }
     });
   }
   
