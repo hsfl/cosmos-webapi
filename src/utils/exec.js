@@ -1,6 +1,3 @@
-const COSMOS_BIN = process.env.COSMOS_DIR + 'bin/';
-
-
 function execute(cmd, args, callback){
     var spawn = require('child_process').spawn;
     try{
