@@ -122,8 +122,12 @@ setInterval(() => {
                         if(!soh.agent_name) soh.agent_name = agent;
                         if(!soh.node_name) soh.node_name = node;
                         soh.node_type = nodeProcess;
-                        dbInsertByUTC([node,'soh'].join(':'), soh, () => {
-                            SendToParentProcess(soh, node);
+                        dbInsertByUTC([node,'soh'].join(':'), soh, (data) => {
+							if (data.error) {
+								console.log(data);
+							} else {
+								SendToParentProcess(soh, node);
+							}
                         });
                     }
                 } catch (e) {
@@ -133,4 +137,4 @@ setInterval(() => {
             }
         });
     });
-}, 5000);
+}, 3000);

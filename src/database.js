@@ -9,29 +9,43 @@ function dbConnect (callback) {
 const errorConnect = { error: "Error Connecting to MongoDB"};
 const successStatus = { status: "Success"};
 
+/** Ensure that object keys do not contain periods */
+const renameJSONKeys = (obj) => {
+    Object.keys(obj).forEach((origKey) => {
+        if (origKey.includes('.')) {
+            // Replace keyname containing '.' to use '/' instead
+            const newKey = origKey.replace(/\./g,'/');
+            delete Object.assign(obj, { [newKey]: obj[origKey] })[origKey];
+        }
+    });
+};
+
 //! insert doc to db 'current' collection `${node}:soh`
 function dbInsertSOH(doc, node){
     return dbInsert('current', `${node}:soh`, doc);
 }
 
-function dbInsert(dbName, collectionName,doc, callback){
+function dbInsert(dbName, collectionName, doc, callback){
     dbConnect((err, db) => {
         if(err) {
             callback(errorConnect);
             return;
         }
+		const renamedDoc = JSON.parse(JSON.stringify(doc));
+        renameJSONKeys(renamedDoc);
         var dbo = db.db(dbName);
         const collection = dbo.collection(collectionName);
-        collection.insertOne(doc, (err) => {
+        collection.insertOne(renamedDoc, (err) => {
             if(err) callback({error: "Error inserting into database."}); 
             else callback(successStatus); 
-            db.close();   
+            db.close();
         });
     });
 }
 
 function dbInsertByUTC(collectionName, doc, callback) {
-    let dbName = 'current'; 
+    let dbName = 'current';
+
     if(doc.node_utc){
         dbName = dbNameByMJD(doc.node_utc);
     }
