@@ -7,7 +7,7 @@ COPY package.json ./
 RUN npm install
 
 COPY . ./
-RUN echo "DB_URI=mongodb://localhost:27017/\n" \
+RUN echo "DB_URI=mongodb://db:27017/\n" \
          "WEBSOCKET_PORT=8081\n" \
          "API_PORT=8082\n" \
          "COSMOS_DIR=/cosmos/\n" \
