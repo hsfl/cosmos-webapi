@@ -58,10 +58,10 @@ function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
     if(agent_port > 0) {
         const req = AgentMessageBuf(AgentMessageType.REQUEST, request);
         const agent_socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
-        agent_socket.send(req, agent_port, agent_addr)
+        agent_socket.send(req, agent_port, agent_addr);
         var resp = '';
         agent_socket.on('message', (msg, rinfo) => {
-            resp += msg.toString(); 
+            resp += msg.toString();
         });
         const socketTimeout = setTimeout(() => {
             agent_socket.close();
