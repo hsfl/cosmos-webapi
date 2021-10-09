@@ -1,5 +1,6 @@
 const COSMOS_ADDR = "225.1.1.1";
 const COSMOS_PORT = 10020;
+const COSMOS_PORT_EXTERNAL = 10021;
 
 const dayjs = require('dayjs');
 const dgram = require('dgram');
@@ -52,7 +53,30 @@ socket.on('message', (msg, rinfo) => {
         }
     }
 });
+const socket_external = dgram.createSocket({ type: "udp4", reuseAddr: true });
+socket_external.bind(COSMOS_PORT_EXTERNAL);
+socket_external.on('error', (err) => {
+  console.log(`server error:\n${err.stack}`);
+  socket_external.close();
+});
 
+socket_external.on('listening', () => {
+  socket_external.addMembership(COSMOS_ADDR);
+  var address = socket_external.address();
+  console.log(`server listening ${address.address}:${address.port}`);
+});
+socket_external.on('message', (msg, rinfo) => { 
+  try {
+    const soh = JSON.parse(msg);
+    if(!soh.node_utc) soh.node_utc = currentMJD();
+    if(!soh.agent_name) soh.agent_name = 'external_agent';
+    if(!soh.node_name) soh.node_name = 'external_node';
+    soh.node_type = [soh.node_name, soh.agent_name].join(':');
+    SendToParentProcess(soh, 'any');
+  } catch(e) {
+    console.log(e);
+  }
+});
 /**
  * 
  * @param { Object } beat 
