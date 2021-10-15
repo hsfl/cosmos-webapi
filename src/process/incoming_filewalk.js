@@ -1,6 +1,6 @@
 const { listAllNodes, getNodeDir, gzLineByLine } = require("../utils/file");
 const { dbFind , dbInsert , dbFindAndReplace } = require("../database");
-const { SendToParentProcess } = require("./process");
+const { SendToParentProcess } = require("../utils/child_process");
 const fs = require('fs');
 const path = require('path');
 

@@ -4,11 +4,12 @@ const COSMOS_PORT_EXTERNAL = 10021;
 
 const dayjs = require('dayjs');
 const dgram = require('dgram');
-const { getDiff, MJD2daysjs, currentMJD } = require('../utils/time');
-const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
-const { SendToParentProcess } = require("./process");
+const { SendToParentProcess } = require("../utils/child_process");
 const CosmosAgent = require('../utils/agent');
 const { dbInsertByUTC } = require('../database');
+
+const { getDiff, MJD2daysjs, currentMJD } = require('../utils/time');
+const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
 
 socket.bind(COSMOS_PORT);
 socket.on('error', (err) => {
@@ -22,9 +23,8 @@ socket.on('listening', () => {
   console.log(`server listening ${address.address}:${address.port}`);
 });
 
-var heartbeats = {};
-var agent_exec_count = 0;
-
+const heartbeats = {};
+let agent_exec_count = 0;
 
 /**
  * COSMOS LISTEN LOOP
@@ -53,29 +53,30 @@ socket.on('message', (msg, rinfo) => {
         }
     }
 });
+
 const socket_external = dgram.createSocket({ type: "udp4", reuseAddr: true });
 socket_external.bind(COSMOS_PORT_EXTERNAL);
 socket_external.on('error', (err) => {
-  console.log(`server error:\n${err.stack}`);
-  socket_external.close();
+    console.log(`server error:\n${err.stack}`);
+    socket_external.close();
 });
 
 socket_external.on('listening', () => {
-  socket_external.addMembership(COSMOS_ADDR);
-  var address = socket_external.address();
-  console.log(`server listening ${address.address}:${address.port}`);
+    socket_external.addMembership(COSMOS_ADDR);
+    var address = socket_external.address();
+    console.log(`server listening ${address.address}:${address.port}`);
 });
 socket_external.on('message', (msg, rinfo) => { 
-  try {
-    const soh = JSON.parse(msg);
-    if(!soh.node_utc) soh.node_utc = currentMJD();
-    if(!soh.agent_name) soh.agent_name = 'external_agent';
-    if(!soh.node_name) soh.node_name = 'external_node';
-    soh.node_type = [soh.node_name, soh.agent_name].join(':');
-    SendToParentProcess(soh, 'any');
-  } catch(e) {
-    console.log(e);
-  }
+    try {
+        const soh = JSON.parse(msg);
+        if(!soh.node_utc) soh.node_utc = currentMJD();
+        if(!soh.agent_name) soh.agent_name = 'external_agent';
+        if(!soh.node_name) soh.node_name = 'external_node';
+        soh.node_type = [soh.node_name, soh.agent_name].join(':');
+        SendToParentProcess(soh, 'any');
+    } catch(e) {
+        console.log(e);
+    }
 });
 /**
  * 
@@ -95,7 +96,6 @@ function addAgentToList(beat) {
     }
     
 }
-
 
 /**
  * agent list loop - send list of active agents every 5 sec.
@@ -129,7 +129,7 @@ setInterval(() => {
 }, 60000);
 
 //! get agent soh at 5 sec interval
-setInterval(() => {
+/*setInterval(() => {
     Object.keys(heartbeats).forEach(a => {
         const node = heartbeats[a].agent_node;
         const agent = heartbeats[a].agent_proc;
@@ -157,4 +157,4 @@ setInterval(() => {
             }
         });
     });
-}, 5000);
+}, 5000);*/

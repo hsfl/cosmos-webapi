@@ -1,6 +1,6 @@
 const CosmosAgent = require('../utils/agent');
 const hostNode = process.env.HOST_NODE;
-const { SendToParentProcess } = require("./process");
+const { SendToParentProcess } = require("../utils/child_process");
 
 var heartbeat = {}; 
 process.on('message', (json) => {

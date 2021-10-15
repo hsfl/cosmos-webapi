@@ -7,8 +7,10 @@ require('dotenv').config();
 // Websocket server & database driver
 const client = require('./database');
 
-global.heartbeats = [];
+// http server and module to start processes
+global.heartbeats = {};
 const wss = require('./websocket');
+require('./process');
 
 // Express Modules
 const namespaceRoute = require('./routes/namespace');
@@ -16,6 +18,7 @@ const commandsRoute = require('./routes/commands');
 const queryRoute = require('./routes/query');
 const nodesRoute = require('./routes/nodes');
 const agentsRoute = require('./routes/agents');
+const telegrafRoute = require('./routes/telegraf');
 
 // Express server
 const app = express();
@@ -30,6 +33,7 @@ app.use('/commands', commandsRoute);
 app.use('/query', queryRoute);
 app.use('//nodes', nodesRoute);
 app.use('//agents', agentsRoute);
+app.use('/telegraf', telegrafRoute);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

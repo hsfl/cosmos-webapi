@@ -1,4 +1,4 @@
-const { SendToParentProcess } = require("./process");
+const { SendToParentProcess } = require("../utils/child_process");
 const CosmosAgent = require('../utils/agent');
 
 var heartbeats = {};
