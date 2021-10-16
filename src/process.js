@@ -84,7 +84,7 @@ file_list.on('message', (message) => sendChildMessageToClients(message));
  * 4. Forwards SOH data to clients 
  */
 const cosmos_socket = fork('./src/process/cosmos_socket.js');
-cosmos_socket.on('message', message => {
+/*cosmos_socket.on('message', message => {
   try {
     const msg = JSON.parse(message);
     if (msg.node === 'heartbeat') {
@@ -97,7 +97,7 @@ cosmos_socket.on('message', message => {
     }
   } catch (e) { console.log(e); }
   
-});
+});*/
 
 function updateAgentList(heartbeats) {
   //! Array of agents as { agent: , utc: , node: }
@@ -112,9 +112,9 @@ function updateAgentList(heartbeats) {
   try {
     Object.keys(heartbeats).forEach(a => {
       all_agents.push({
-            agent: heartbeats[a].agent_proc,
-            utc: heartbeats[a].agent_utc,
-            node: heartbeats[a].agent_node
+          agent: heartbeats[a].agent_proc,
+          utc: heartbeats[a].agent_utc,
+          node: heartbeats[a].agent_node
         });
         if(heartbeats[a].agent_proc === 'exec') {
           exec_agents[heartbeats[a].agent_node] = heartbeats[a];
@@ -140,3 +140,22 @@ function updateAgentList(heartbeats) {
   }
   catch(e){ console.log(e); }
 }
+
+// Retrive list of SOHs from visible agents
+// Used by telegraf http endpoint
+const getSOHs = async () => {
+  sendToChildProcess(cosmos_socket, { caller: 'getSOHs' });
+  const response = await new Promise(resolve => {
+    cosmos_socket.on('message', function callback(message) {
+      if (message.caller === 'getSOHs') {
+        cosmos_socket.removeListener('message', callback);
+        resolve(message.response);
+      }
+    });
+  });
+  return response;
+};
+
+module.exports = {
+  getSOHs,
+};

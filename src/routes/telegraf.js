@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const CosmosAgent = require('../utils/agent');
+const { getSOHs } = require('../process');
+
+setTimeout(() => getSOHs(), 5000);
 
 /**   route GET /telegraf/
 test this with :
