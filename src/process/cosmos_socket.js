@@ -133,11 +133,11 @@ setInterval(() => {
 process.on('message', (message) => {
   switch (message.caller) {
     case 'getSOHs':
-      console.log('message receieved from getSOHs');
       getSOHs(message);
       break;
     default:
       console.log('No matching caller!');
+      process.send({ ...message, ...{ response: 'Error in cosmos_socket.js: No matching caller' }});
   }
 });
 
@@ -150,7 +150,7 @@ const getSOHs = (message) => {
     const agent = heartbeats[a].agent_proc;
     const nodeProcess = [node, agent].join(':');
     return new Promise((resolve) => {
-      CosmosAgent.AgentReqByHeartbeat(heartbeats[a], 'soh', 3000, (resp) => {
+      CosmosAgent.AgentReqByHeartbeatImmediate(heartbeats[a], 'soh', 3000, (resp) => {
         if(typeof resp === 'string') {
           const json_begin = resp.indexOf('{');
           const json_end = resp.lastIndexOf('}');

@@ -47,6 +47,21 @@ function AgentReqByHeartbeat(heartbeat, request, waitms, callback) {
 }
 
 /**
+ * 
+ * @param {Object} heartbeat 
+ * @param {String} request 
+ * @param {Number} waitms 
+ * @param {function(resp)} callback 
+ */
+ function AgentReqByHeartbeatImmediate(heartbeat, request, waitms, callback) {
+    if(heartbeat.agent_port && heartbeat.agent_addr){
+        AgentReqByAddrImmediate(request, heartbeat.agent_port, heartbeat.agent_addr, waitms, callback);
+    } else {
+        callback({ error: 'agent not available'});
+    }
+}
+
+/**
  * Send Request to an Agent
  * @param {String} request 
  * @param {Number} agent_port 
@@ -67,6 +82,35 @@ function AgentReqByAddr(request, agent_port, agent_addr, waitms, callback){
             agent_socket.close();
             callback(resp);
         }, waitms);
+    } else {
+        callback({ error: 'agent not available'});
+    }
+}
+
+/**
+ * Send Request to an Agent, does not wait for waitms to elapse if an agent response is received.
+ * Use for agent requests that do not need to wait for multiple responses.
+ * @param {String} request 
+ * @param {Number} agent_port 
+ * @param {String} agent_addr 
+ * @param {Number} waitms 
+ * @param {function (resp)} callback 
+ */
+ function AgentReqByAddrImmediate(request, agent_port, agent_addr, waitms, callback){
+    if(agent_port > 0) {
+        const req = AgentMessageBuf(AgentMessageType.REQUEST, request);
+        const agent_socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
+        agent_socket.send(req, agent_port, agent_addr)
+        var resp = '';
+        agent_socket.once('message', (msg, rinfo) => {
+            resp += msg.toString();
+        });
+        const socketTimeout = setTimeout(() => {
+            agent_socket.close();
+        }, waitms);
+        agent_socket.once('message', () => {
+            callback(resp);
+        });
     } else {
         callback({ error: 'agent not available'});
     }
@@ -106,4 +150,5 @@ module.exports = {
     AgentChannelMessageBuf,
     AgentMessageType,
     AgentReqByHeartbeat,
+	AgentReqByHeartbeatImmediate,
 };
